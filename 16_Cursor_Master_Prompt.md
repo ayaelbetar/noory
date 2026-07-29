@@ -19,7 +19,7 @@ All specification files live in the **same directory as this file** (flat layout
 
 **Do not** use a `/docs` subfolder unless the repository is explicitly reorganized.
 
-**Path example:** `C:\Users\Arabmac os\Desktop\noory\noor\` (or your clone’s equivalent).
+**Path example:** `<repository root>/` (or your clone’s equivalent).
 
 ---
 

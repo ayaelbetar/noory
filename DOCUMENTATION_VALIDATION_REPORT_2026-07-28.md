@@ -1,7 +1,7 @@
 # Documentation Validation Report — Noory Read with Noor
 
 **Validation date:** 2026-07-28  
-**Package path:** `C:\Users\Arabmac os\Desktop\noory demo`  
+**Package path:** `<repository root>`  
 **Validator role:** Final pre-implementation documentation validation  
 **Business behavior:** Unchanged (traceability-only edits: `06_User_Stories.md`, `QA Test Strategy.md`)
 

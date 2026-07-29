@@ -1,7 +1,7 @@
 # Documentation Refactor Report — Noory Read with Noor
 
 **Date:** 2026-07-28  
-**Scope:** All Markdown in `C:\Users\Arabmac os\Desktop\noory demo`  
+**Scope:** All Markdown in `<repository root>`  
 **Role:** Senior Documentation Architect / Technical Writer pass (no application code)  
 **Baseline:** Product Review Board audit 2026-07-27 (`REVIEW_REPORT.md`)
 

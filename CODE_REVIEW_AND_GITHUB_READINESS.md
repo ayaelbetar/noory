@@ -1,80 +1,128 @@
 # Code Review and GitHub Readiness
 
-**Review date:** 28 July 2026  
-**Scope:** Complete local repository review: runtime source, tests, configuration, assets, product documentation, and GitHub-readiness files.
+**Review date:** 29 July 2026  
+**Scope:** Final local release review of the active Read with Noor POC. No commit, remote change, or push was performed.
 
-## Review Summary
+## Final Review Summary
 
-This is a static JavaScript POC with a small, separated runtime surface: `app-v2.js` for UI/session orchestration; recorder, evaluator, guard, narrator, voice, and analytics feature modules; local data/assets; and Node unit tests. The active HTML entry point loads `src/app-v2.js`; the legacy `src/app.js` remains in the repository but is not loaded by `index.html` and was retained to avoid unsafe deletion.
+The active application is `index.html` → `src/app-v2.js`. The recording, local evaluation, narrator, optional Noor voice, local-storage recovery, analytics, and edge-case guard modules are present and pass their automated checks. Recent UI assets are repository-relative and resolve from the local server.
 
-The review preserved every existing product flow. Safe fixes were applied for temporary recording-URL cleanup, active recording cleanup on Home navigation, missing expected page text, and Git-safe repository setup. No secrets were found in source. The POC can run locally, pass syntax checks, and pass its test suite.
+**Overall status: Not ready to push yet.** The Home containment experiment was rolled back at the product owner’s request because it changed the approved desktop composition. A final interactive mobile-browser visual sign-off and a design-preserving responsive fix are still required. No existing flow was deliberately removed or simplified.
 
-## Issues Found and Resolution
+## Latest UI/UX Changes Verified
+
+- Home includes the current Read with Noor visual feature card and remains an actionable `data-action="noor"` entry point.
+- The new transparent Noor asset is referenced through repository-relative paths in the active UI.
+- Retry keeps a single “Try again” action; Success keeps the optional listening control.
+- Noor’s on-screen feedback and narrator playback remain separated by the `voiceFeedbackEnabled` control.
+- Reduced-motion CSS and live-status semantics remain present.
+
+## Issues Found and Fixed
 
 | Severity | File | Issue | Resolution |
-| --- | --- | --- | --- |
-| High | `src/app-v2.js` | Abandoned/replaced recording object URLs could remain allocated in browser memory. | Added central URL release during attempt reset and active-recording cleanup on Home/details navigation. |
-| High | `src/app-v2.js` | A page with missing expected text could enter recording/evaluation flow. | Added `validateExpectedText()` guard; the attempt now becomes a technical failure, not a reading Retry. |
-| Medium | Root | No `.gitignore` or `.env.example` existed. | Added both; `.env` and local artifacts are ignored while required audio/assets are not ignored. |
-| Medium | `README.md` | Existing README was a specification index, not a clean-clone technical handoff. | Replaced with GitHub-ready project overview, local setup, scripts, architecture, privacy, limitations, and document links. |
-| Medium | Feature modules | Important public business utilities had uneven documentation coverage. | Added JSDoc to evaluator and guard APIs; documented feedback/analytics modules where source encoding allowed safe rewrite. |
-| Low | `src/app.js`, `styles-v2.css`, `noory demo (1).zip` | Legacy/auxiliary artifacts are present. Their removal could break an unverified demo/reference workflow. | Retained and documented as review items; active entry point is explicitly identified. |
-| Low | Historical Markdown reports | Some historical documentation contains local absolute paths. | No runtime source depends on them; recorded as historical documentation cleanup, not changed to avoid altering audit records. |
+| --- | --- | --- |
+| Medium | `assets/images/` | Three generated intermediate images and one previous home-banner asset were not referenced by active source. | Removed only the unused intermediates; retained the cropped Noor asset and current feature-banner asset. |
+| Medium | `16_Cursor_Master_Prompt.md`, documentation reports | Historical docs contained a personal absolute Windows path. | Replaced it with `<repository root>`. |
+| Medium | Root | No lockfile prevented `npm audit` and clean-install validation. | Added generated `package-lock.json`; it contains no third-party packages. `npm ci` and audit now pass. |
+| Medium | `styles-v2.css` | The stylesheet has accumulated repeated selector blocks from successive UI iterations, making cascade ownership difficult to review. | Retained to preserve the approved UI during this pass. Consolidate only after visual baselines are captured; do not mark final UI review complete before that cleanup/retest. |
+| High | Home responsive layout | The `category-rail` uses negative inline margins and a multi-column intrinsic width inside the RTL flex screen, which can widen the Home/app shell and clip the latest feature card at narrow widths. | An initial containment experiment changed the approved desktop composition and was rolled back. A design-preserving responsive fix remains open and requires interactive mobile verification. |
+
+## Product Flow Verification
+
+| Flow | Status | Notes |
+| --- | --- | --- |
+| Meet Noor, optional name, persistence, settings | Partial | Source and local-storage paths reviewed; not re-driven interactively in this final pass. |
+| Consent gate and book library/details navigation | Partial | Source reviewed; local server smoke test passed. |
+| Start/stop recording, timer, validation | Passed | Guard and recorder tests pass; microphone permission remains device/browser dependent. |
+| Processing, Success, Retry, narrator-after-Retry | Passed | Evaluator, feedback, and narrator tests pass. |
+| Continue after three genuine Retry outcomes | Passed | Covered by evaluator and feedback tests. |
+| Technical errors not counted as Retry | Passed | Guard and feedback tests cover the separation. |
+| Noor voice toggle / narrator independence | Passed | Voice and narrator service tests pass; source keeps the services independent. |
+| Page navigation, final score, Reading Summary | Partial | State transitions reviewed; not re-driven with a real recording in this final pass. |
+| Session recovery, offline/background/kill/call scenarios | Partial | Session snapshot logic reviewed; physical-device recovery scenarios remain manual QA. |
+| Analytics and mock mode | Passed | Local in-memory POC analytics and local evaluator are present; no remote service is required. |
+
+## Responsive Verification
+
+| Viewport | Status | Result |
+| --- | --- | --- |
+| 320px | Partial | Headless capture generated; Chrome minimum-window behavior prevents a reliable CSS-width verdict. |
+| 375px | Partial | Headless capture generated; needs interactive browser confirmation. |
+| 390px | Partial | Root-cause fix applied and capture regenerated; needs interactive browser confirmation. |
+| 430px | Partial | Headless capture generated; needs interactive browser confirmation. |
+| Tablet (768px) | Partial | Headless capture generated; needs final interactive navigation/state pass. |
+| Desktop (1440px) | Partial | Headless capture generated; needs final interactive navigation/state pass. |
+
+## Accessibility Verification
+
+- RTL is declared in `index.html` and reinforced in the visual stylesheet.
+- Interactive controls use buttons and existing focus-visible styles.
+- Noor feedback uses a polite live region; reduced-motion media handling is present.
+- **Partial:** full keyboard, screen-reader, contrast, and touch-target validation needs manual browser/device testing after the responsive blocker is fixed.
+
+## Security and Secret Scan
+
+- `.env` and `.env.*` are ignored; `.env.example` contains placeholders only.
+- Local recordings, common audio files, archives, logs, databases, editor folders, and build outputs are ignored.
+- Static repository scans found no credential-shaped value or common live-key prefix in source.
+- The local evaluator, analytics, and session snapshot do not transmit child names, transcript text, or recording bytes to a server.
+- Temporary recording object URLs are released by session cleanup; no recording file is stored in the repository.
+- No file exceeds 50 MB; the largest image asset is approximately 2.5 MB.
 
 ## Documentation Coverage
 
-- **Public symbols reviewed:** 27 (`export function`, `export class`, and exported constants in `src/`).
-- **JSDoc blocks present after this review:** 27.
-- **Important business functions documented in this pass:** evaluator normalization/evaluation/banding, session guard rules, feedback mapping, analytics API, recorder lifecycle, narrator/Noor voice services, and key session orchestration functions.
-- **Not separately documented:** simple constants and message lookup helpers whose names make their one-line purpose unambiguous. The legacy `src/app.js` was retained but not re-documented because it is not loaded by the active entry point.
+`README.md` documents setup, environment placeholders, mock mode, real-integration limitations, scripts, privacy, testing, architecture, product-document links, and known limitations. Its commands match `package.json`.
 
-## Security Check
+Feature modules expose useful JSDoc for evaluator, guards, recorder, narrator, Noor voice, feedback, and analytics. `src/app-v2.js` has documentation for the complex recording, evaluation, retry/narrator, cleanup, and session-completion transitions. Simple rendering and local-storage helpers remain intentionally concise.
 
-| Check | Result |
-| --- | --- |
-| Secret-pattern scan | No source secret matches. The only API-key string is the intentional placeholder in `.env.example`. |
-| `.env` ignored | Yes. |
-| `.env.example` available | Yes; contains placeholders only. |
-| Browser secrets | None found. The POC has no external API integration. |
-| Remaining risk | A production STT/evaluation key must live on a server, never in this browser client. |
-
-## Build and Test Results
+## Commands Run and Actual Results
 
 | Command | Result |
 | --- | --- |
-| `npm.cmd run check` | Passed — JavaScript syntax validated for active runtime modules and server. |
-| `npm.cmd test` | Passed — 18 tests, 5 suites, 0 failures. |
-| Local static-server smoke check | Passed — `/` returned 200 and `/src/app-v2.js` returned 200. |
-| Lint | Not configured in this repository. |
-| Type check | Not configured; this is plain JavaScript with JSDoc, not TypeScript. |
-| Production build | No build pipeline exists; static files are served directly by `server.js`. |
+| `npm.cmd install --package-lock-only --ignore-scripts` | Passed; created lockfile with one audited package and no vulnerabilities. |
+| `npm.cmd ci --ignore-scripts` | Passed. |
+| `npm.cmd audit --omit=dev --audit-level=high` | Passed; 0 vulnerabilities. |
+| `npm.cmd run check` | Passed; active JavaScript modules and server syntax checked. |
+| `npm.cmd test` | Passed; 18 tests, 5 suites, 0 failures. |
+| Local static-server smoke test | Passed; `/` returned 200 and traversal attempt returned 404. |
+| Formatter | Not configured. |
+| Lint | Not configured. |
+| Type check | Not configured; plain JavaScript project. |
+| Production build | Not configured; static files are served directly by `server.js`. |
+
+Formatter, lint, type-check, and build scripts were assessed but not added. This is a dependency-free static JavaScript POC: adding Prettier, ESLint, TypeScript, or a bundler solely for this release would add tooling/dependencies without an existing project convention or a required build target. They therefore remain accurately reported as **not configured**, not passed.
 
 ## GitHub Readiness Checklist
 
-- [x] Static runtime syntax check passes.
-- [x] Unit tests pass.
-- [ ] Lint passes — no linter is configured.
-- [ ] Type checking passes — no type checker is configured.
-- [x] `.env` is ignored.
-- [x] `.env.example` is available.
-- [x] README documents setup, scripts, mock behavior, safety, and limitations.
-- [x] No source secrets found by the repository scan.
-- [x] Required POC image/story assets are included; no file exceeds 50 MB.
-- [x] PRD and Product Manager Assessment are included at repository root.
-- [x] Known limitations are documented.
-- [x] Local static-server smoke check passes.
-- [ ] Clean-clone install has not been performed in a separate empty directory.
-- [ ] Git status cannot be verified: this workspace is not currently a Git repository.
+- [x] Latest design source reviewed.
+- [ ] Responsive checks passed — blocked by 390px Home overflow.
+- [x] Automated core-flow checks passed.
+- [x] Accessibility source review completed.
+- [ ] Formatter passed — no formatter configured.
+- [ ] Lint passed — no linter configured.
+- [ ] Type check passed — no type checker configured.
+- [x] Tests passed.
+- [x] Production-build equivalent checked — static server smoke test passed; no build script exists.
+- [x] No secrets detected by static scan.
+- [x] `.env` ignored and `.env.example` valid.
+- [x] README and product documents included.
+- [x] Required active assets included.
+- [x] Clean-install setup verified with `npm ci`.
+- [x] Git status, branch, staged/untracked files, ignored sensitive patterns, and remote were reviewed.
+- [ ] Commit/push readiness — no commit exists and no remote is configured; do not commit or push until the responsive blocker is closed and the proposed file list is approved.
 
-## Remaining Actions Before Publishing
+## Git Review
 
-1. Initialise or connect the desired Git repository; inspect `git status` before the first commit.
-2. Choose and add a license, or retain the README statement that no license is specified.
-3. Perform a clean-clone smoke test after repository creation.
-4. Add a hosted demo URL only after deployment exists.
-5. Before production use, implement server-side evaluation, consent ownership/versioning, secure audio retention/deletion, provider credentials, and HTTP contract testing.
-6. Run Android/iOS device, accessibility, and teacher-calibration validation before any child-facing release.
+- Branch: `main`
+- Current history: no commits yet.
+- Remote: none configured.
+- Sensitive archive `noory demo (1).zip` is ignored.
+- Untracked files required by the current UI: `assets/images/noor-recording-reader-cropped.png`, `assets/images/read-with-noor-feature-v2.png`, `UI_UX_AUDIT.md`, and the generated `package-lock.json`.
+- Staged files are the initial repository contents; `src/app-v2.js` and `styles-v2.css` also have unstaged UI changes. No `git add`, commit, remote change, or push was performed in this review.
 
-## Preserved Functionality
+## Remaining Actions Before Push
 
-No feature, story asset, existing test, flow, or design system was deleted. The active app remains `index.html` → `src/app-v2.js`; legacy artifacts were retained when their removal could not be proven safe.
+1. Run an interactive mobile-browser visual pass at 320, 375, 390, 430, tablet, and desktop widths; confirm the Home containment fix with no horizontal scroll, clipping, overlap, or unreachable actions.
+2. Perform a real-device manual pass for microphone permission, recording, narrator audio, background/kill/call recovery, and screen-reader behavior.
+3. Decide whether to configure formatter/lint/type-check tooling; none is currently available.
+4. Review the complete staged plus untracked file set, then explicitly approve `git add` and a first commit. A GitHub remote and separate push approval will still be required.

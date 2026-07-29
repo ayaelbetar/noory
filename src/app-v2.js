@@ -762,14 +762,13 @@ function renderHome() {
         ${discoveryItems.map(discoveryItem).join("")}
       </section>
 
-      <button class="read-noor-feature" data-action="noor">
+      <button class="read-noor-feature read-noor-feature--art" data-action="noor" aria-label="ميزة جديدة: اقرأ مع نور">
+        <span class="read-noor-feature-art" aria-hidden="true"></span>
         <span class="read-noor-copy">
           <span class="feature-kicker">ميزة جديدة</span>
           <strong>${t("cta.read_with_noor")}</strong>
           <span>${t("welcome.01")}</span>
         </span>
-        <span class="noor-doodle star-trail" aria-hidden="true">✦ ✧</span>
-        <img class="${state.voiceFeedbackPlaying ? "is-speaking" : ""}" src="./assets/images/noor-reading-companion.png" alt="نور">
       </button>
 
       <section class="content-section">
@@ -804,7 +803,7 @@ function renderNoorIntro() {
         <span class="noor-doodle moon" aria-hidden="true">☾</span>
         <span class="noor-doodle book" aria-hidden="true">📚</span>
         <span class="noor-doodle sparkle" aria-hidden="true">✦</span>
-        <img src="./assets/images/noor-reading-companion.png" alt="نور">
+        <img src="./assets/images/noor-recording-reader-cropped.png" alt="نور">
       </section>
       <section class="noor-intro-copy" aria-live="polite">
         <p class="noor-greeting">مرحبًا! أنا نور <span aria-hidden="true">🌟</span></p>
@@ -829,7 +828,7 @@ function renderNoorIntro() {
 function discoveryItem(item) {
   const tag = item.action ? "button" : "div";
   const action = item.action ? ` data-action="${item.action}"` : "";
-  const image = item.action ? `<img src="./assets/images/noor-reading-companion.png" alt="">` : `<span aria-hidden="true"></span>`;
+  const image = item.action ? `<img src="./assets/images/noor-recording-reader-cropped.png" alt="">` : `<span aria-hidden="true"></span>`;
   return `
     <${tag} class="category-item"${action}>
       <span class="${item.className}">${image}</span>
@@ -870,7 +869,7 @@ function renderCatalog() {
     <main class="screen storybook-screen catalog-screen">
       ${topbar(t("cta.read_with_noor"), "home", "edit-name")}
       <section class="feature-intro">
-        <img src="./assets/images/noor-reading-companion.png" alt="نور">
+        <img src="./assets/images/noor-recording-reader-cropped.png" alt="نور">
         <div>
           <p class="eyebrow">اختر قصة</p>
           <h2>خذ وقتك مع نور</h2>
@@ -925,27 +924,40 @@ function renderSession() {
   const pageNumber = state.pageIndex + 1;
   const totalPages = state.book.pages.length;
   const progress = Math.round((state.pageIndex / totalPages) * 100);
-  app.innerHTML = `
-    <main class="screen storybook-screen session-screen phase-${state.phase}">
-      ${topbar(`الصفحة ${toArabicNumber(pageNumber)} من ${toArabicNumber(totalPages)}`, "details")}
-      <div class="progress-track" aria-hidden="true">
-        <div class="progress-fill" style="--progress:${progress}%"></div>
-      </div>
-      <section class="page-shell">
-        <div class="page-scene"${pageIllustrationStyle(page)} role="img" aria-label="رسم القصة"></div>
-        <div class="page-reading-text">${renderReadingText(page.text)}</div>
-        <div class="noor-row">
-          <div class="session-recording-heading">
-            ${renderSessionRecordControl()}
-            ${state.phase === "recording" ? `<span class="session-recording-time" data-recording-timer>${formatRecordingTime(state.recordingSeconds)}</span>` : ""}
-          </div>
-          <div class="noor-bubble">${noorMessage(state.noorMessage)}</div>
+  const isNewScreen = !app.querySelector(".session-screen");
+
+  if (isNewScreen) {
+    app.innerHTML = `
+      <main class="screen storybook-screen session-screen">
+        <div id="session-topbar"></div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill"></div>
         </div>
-        ${state.toast ? `<div class="toast">${state.toast}</div>` : ""}
-        ${renderPhaseControls()}
-      </section>
-    </main>
-  `;
+        <section class="page-shell">
+          <div class="page-scene" role="img" aria-label="رسم القصة"></div>
+          <div class="page-reading-text"></div>
+          <div class="noor-row">
+            <div class="session-recording-heading"></div>
+            <div class="noor-bubble" role="status" aria-live="polite" aria-atomic="true"></div>
+          </div>
+          <div id="toast-container"></div>
+          <div id="phase-controls-container"></div>
+        </section>
+      </main>
+    `;
+  }
+
+  app.querySelector("main").className = `screen storybook-screen session-screen phase-${state.phase}`;
+  app.querySelector("#session-topbar").innerHTML = topbar(`الصفحة ${toArabicNumber(pageNumber)} من ${toArabicNumber(totalPages)}`, "details");
+  app.querySelector(".progress-fill").style.setProperty("--progress", `${progress}%`);
+  const pageShell = app.querySelector(".page-shell");
+  pageShell.style.cssText = pageIllustrationStyle(page).replace('style="', '').slice(0, -1);
+  app.querySelector(".page-scene").style.cssText = pageIllustrationStyle(page).replace('style="', '').slice(0, -1);
+  app.querySelector(".page-reading-text").innerHTML = renderReadingText(page.text);
+  app.querySelector(".session-recording-heading").innerHTML = `${renderSessionRecordControl()}${state.phase === "recording" ? `<span class="session-recording-time" data-recording-timer>${formatRecordingTime(state.recordingSeconds)}</span>` : ""}`;
+  app.querySelector(".noor-bubble").innerHTML = noorMessage(state.noorMessage);
+  app.querySelector("#toast-container").innerHTML = state.toast ? `<div class="toast">${state.toast}</div>` : "";
+  app.querySelector("#phase-controls-container").innerHTML = renderPhaseControls();
 }
 
 function startRecordingTimer() {
@@ -987,7 +999,6 @@ function feedbackPopupTemplate() {
       <span class="confetti" aria-hidden="true"></span>
       <span class="confetti c2" aria-hidden="true"></span>
       <span class="confetti c3" aria-hidden="true"></span>
-      <img class="feedback-noor" src="./assets/images/noor-reading-companion.png" alt="نور">
       <span class="feedback-copy">
         <small>${state.feedbackPopup.tone === "success" ? "رائع!" : "محاولة جميلة!"}</small>
         <strong>${t(state.feedbackPopup.titleKey)}</strong>
@@ -1017,7 +1028,7 @@ function renderSessionRecordControl() {
         ? "retry-page"
         : "";
   const label = isRecording ? "إيقاف التسجيل" : state.phase === "retry" ? "حاول مرة أخرى" : "ابدأ التسجيل";
-  const artwork = `<img class="session-record-icon" src="./assets/images/record-icon-noor.png" alt="">`;
+  const artwork = `<img class="session-record-icon" src="./assets/images/noor-recording-reader-cropped.png" alt="">`;
 
   if (!action) return `<span class="session-record-control is-passive" aria-hidden="true">${artwork}</span>`;
   return `<button class="session-record-control${isRecording ? " is-recording" : ""}" data-action="${action}" aria-label="${label}">${artwork}</button>`;
@@ -1071,7 +1082,6 @@ function renderPhaseControls() {
     return `
       <div class="controls">
         ${renderRetryHint()}
-        ${renderOptionalPlayback()}
         <button class="primary-button" data-action="retry-page">${t("cta.retry")}</button>
       </div>
     `;
@@ -1126,7 +1136,10 @@ function renderPageQuestion() {
     : "";
   return `
     <section class="page-question" aria-label="سؤال عن القصة">
-      <strong>${question.prompt}</strong>
+      <div class="question-noor-heading">
+        <img class="question-noor" src="./assets/images/noor-recording-reader-cropped.png" alt="نور">
+        <strong>${question.prompt}</strong>
+      </div>
       <div class="question-options">
         ${question.options.map((option) => `<button class="question-option${answered === option ? " selected" : ""}" data-action="answer-question" data-answer="${option}">${option}</button>`).join("")}
       </div>
@@ -1191,7 +1204,7 @@ function renderSummary() {
           <p class="lead">رائع! لقد أتممت قراءة القصة.</p>
         </div>
         <figure class="summary-noor-card">
-          <img class="summary-noor" src="./assets/images/noor-reading-companion.png" alt="نور">
+          <img class="summary-noor" src="./assets/images/noor-recording-reader-cropped.png" alt="نور">
         </figure>
         <p class="small-note">ما شاء الله! نور سعيد بقراءتك.</p>
       </section>

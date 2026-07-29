@@ -151,8 +151,17 @@ button.category-item {
 }
 
 .category-cover.noor-feature {
-  border-color: var(--purple-2);
+  border-color: #7d2dac;
+  outline-color: rgba(125, 45, 172, 0.18);
   background: #ffffff;
+}
+
+.category-cover.noor-feature img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: none !important;
 }
 
 .category-cover img {
@@ -176,6 +185,86 @@ button.category-item {
   text-align: start;
   box-shadow: 0 18px 28px rgba(125, 45, 172, 0.24);
   cursor: pointer;
+}
+
+/* Home feature card: landscape Noor artwork, with the copy safely positioned
+   on the empty half of the supplied image. */
+.read-noor-feature.read-noor-feature--art {
+  position: relative;
+  display: block;
+  min-height: 0;
+  aspect-ratio: 2.38 / 1;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.88);
+  border-radius: 22px;
+  background: #2d0b5b;
+  box-shadow: 0 18px 30px rgba(95, 35, 126, 0.26);
+  isolation: isolate;
+}
+
+.read-noor-feature-art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, transparent 26%, rgba(30, 5, 71, 0.08) 48%, rgba(25, 3, 57, 0.28) 100%),
+    url("./assets/images/read-with-noor-feature-v2.png") 31% center / cover no-repeat;
+}
+
+.read-noor-feature-art::after {
+  content: "";
+  position: absolute;
+  width: 58%;
+  height: 90%;
+  left: -7%;
+  top: 4%;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  transform: rotate(4deg);
+  pointer-events: none;
+}
+
+.read-noor-feature--art .read-noor-copy {
+  position: absolute;
+  top: 17%;
+  right: clamp(16px, 5vw, 28px);
+  left: auto;
+  z-index: 1;
+  width: 46%;
+  gap: 5px;
+  color: #fff;
+  text-align: right;
+  align-content: center;
+}
+
+.read-noor-feature--art .feature-kicker {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 5px 11px;
+  background: rgba(143, 83, 171, 0.8);
+  color: #fff5c5;
+  font-size: clamp(0.72rem, 3.4vw, 0.88rem);
+}
+
+.read-noor-feature--art .read-noor-copy strong {
+  margin-top: 38px;
+  font-size: clamp(1.25rem, 6vw, 2rem);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.read-noor-feature--art .read-noor-copy span:last-child {
+  font-size: clamp(0.72rem, 3.2vw, 0.92rem);
+  line-height: 1.25;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.read-noor-feature--art:focus-visible {
+  outline: 4px solid #ffd84d;
+  outline-offset: 3px;
 }
 
 .read-noor-feature img {
@@ -584,7 +673,7 @@ body {
 }
 
 .session-screen .page-shell {
-  padding-bottom: 0;
+  padding-bottom: 20px;
 }
 
 .session-screen .page-text.page-text-illustrated {
@@ -633,6 +722,176 @@ body {
 .session-screen .recording-controls {
   display: flex;
   justify-content: center;
+}
+
+/* Keep the artwork fully visible: copy sits directly on the story image. */
+.session-screen .page-reading-text {
+  width: min(100%, 460px);
+  margin-top: 0;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: clamp(1.8rem, 8.5vw, 2.7rem);
+  font-weight: 900;
+  line-height: 1.55;
+  text-shadow: 0 3px 10px rgba(20, 8, 38, 0.9);
+  box-shadow: none;
+}
+
+.session-screen .page-reading-text .reading-word.is-read {
+  color: #ffe080;
+  text-shadow: 0 0 12px #ffd84d, 0 3px 10px rgba(20, 8, 38, 0.9);
+}
+
+/* Recording and encouragement stay together at the lower part of the story. */
+.session-screen .noor-row {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.session-screen .session-recording-heading {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.session-screen .session-record-control {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Soft, spacious story-page treatment inspired by the supplied mobile reference.
+   Content, reading flow, and the existing recording-character artwork stay intact. */
+.session-screen {
+  background:
+    radial-gradient(circle at 10% 12%, rgba(206, 184, 242, 0.22), transparent 24%),
+    radial-gradient(circle at 90% 72%, rgba(229, 218, 249, 0.42), transparent 30%),
+    linear-gradient(180deg, #fdfbff 0%, #faf8ff 62%, #f5f0fb 100%);
+}
+
+.session-screen .topbar-back {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #281b38;
+}
+
+.session-screen .progress-track {
+  background: rgba(115, 78, 157, 0.14);
+  box-shadow: none;
+}
+
+.session-screen .page-scene {
+  min-height: clamp(255px, 39vh, 340px);
+  border: 1px solid rgba(113, 82, 151, 0.13);
+  border-radius: 28px;
+  background-color: #ffffff;
+  box-shadow: 0 12px 24px rgba(65, 42, 91, 0.15);
+}
+
+.session-screen .page-reading-text {
+  width: min(100%, 460px);
+  margin-top: 20px;
+  padding: 0 8px;
+  border-radius: 0;
+  background: transparent;
+  color: #2b2034;
+  font-size: clamp(1.65rem, 7.5vw, 2.45rem);
+  font-weight: 800;
+  line-height: 1.7;
+  text-shadow: none;
+  box-shadow: none;
+}
+
+.session-screen .page-reading-text .reading-word.is-read {
+  color: #7f3d9f;
+  text-shadow: none;
+}
+
+.session-screen .noor-row {
+  margin-top: 18px;
+  gap: 12px;
+}
+
+.session-screen .noor-bubble {
+  width: min(100%, 440px);
+  min-height: 0;
+  padding: 17px 20px;
+  border: 1px solid rgba(113, 82, 151, 0.1);
+  border-radius: 28px;
+  background: linear-gradient(135deg, rgba(238, 232, 247, 0.96), rgba(230, 223, 241, 0.92));
+  color: #2b2034;
+  font-size: clamp(1rem, 4.6vw, 1.35rem);
+  line-height: 1.55;
+  box-shadow: 0 10px 20px rgba(67, 46, 92, 0.13);
+}
+
+.session-screen .session-recording-heading {
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+/* Full-bleed story artwork: the page illustration becomes the reading backdrop,
+   while the existing copy and recording-character control remain unchanged. */
+.session-screen .page-shell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 0;
+  padding: 18px 14px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 30px;
+  background-color: #503878;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(31, 16, 52, 0.03) 48%, rgba(26, 12, 43, 0.36) 100%),
+    var(--page-illustration);
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 18px 36px rgba(59, 34, 83, 0.2);
+}
+
+.session-screen .page-scene {
+  display: none;
+}
+
+.session-screen .page-reading-text,
+.session-screen .noor-row,
+.session-screen .page-shell > .controls,
+.session-screen .page-shell > .toast {
+  position: relative;
+  z-index: 1;
+}
+
+.session-screen .page-reading-text {
+  width: min(100%, 360px);
+  margin-top: auto;
+  padding: 17px 20px 19px;
+  border-radius: 24px;
+  background: rgba(54, 31, 89, 0.92);
+  color: #ffffff;
+  font-size: clamp(1.9rem, 9vw, 2.75rem);
+  font-weight: 900;
+  line-height: 1.35;
+  text-shadow: 0 3px 9px rgba(20, 8, 38, 0.52);
+  box-shadow: 0 12px 24px rgba(23, 9, 38, 0.28);
+}
+
+.session-screen .page-reading-text .reading-word.is-read {
+  color: #ffe080;
+  text-shadow: 0 0 12px #ffd84d, 0 3px 9px rgba(20, 8, 38, 0.52);
+}
+
+.session-screen .noor-bubble {
+  background: rgba(255, 255, 255, 0.9);
+  color: #3c2761;
+  box-shadow: 0 12px 24px rgba(23, 9, 38, 0.2);
+  backdrop-filter: blur(8px);
 }
 
 /* The recording action replaces Noor's avatar throughout the reading session. */
@@ -981,6 +1240,29 @@ body {
   color: #8a5a05;
 }
 
+.question-noor-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: start;
+}
+
+.question-noor-heading strong {
+  flex: 1;
+}
+
+.question-noor {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 5px 12px rgba(62, 39, 89, 0.2);
+}
+
 .parent-insight {
   margin: 0;
   padding: 10px 14px;
@@ -1180,7 +1462,8 @@ body {
   object-fit: cover;
   background: #ffffff;
   box-shadow: 0 14px 28px rgba(57, 17, 74, 0.22);
-  transform: scaleX(-1);
+  /* The supplied Noor artwork already faces the correct direction. */
+  transform: none;
 }
 
 .noor-intro-copy {
@@ -1294,8 +1577,8 @@ body {
 }
 
 @keyframes noor-hero-speaking {
-  from { transform: scaleX(-1) translateY(0) rotate(-1deg); }
-  to { transform: scaleX(-1) translateY(-7px) rotate(1deg); }
+  from { transform: translateY(0) rotate(-1deg); }
+  to { transform: translateY(-7px) rotate(1deg); }
 }
 
 .noor-intro-copy .noor-ready {
@@ -2428,4 +2711,137 @@ body {
 .session-screen .recording-controls {
   display: flex;
   justify-content: center;
+}
+
+/* Full-bleed reading content: no purple text card obscures the story art. */
+.session-screen .page-reading-text {
+  width: min(100%, 460px);
+  margin-top: 0;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: clamp(1.8rem, 8.5vw, 2.7rem);
+  font-weight: 900;
+  line-height: 1.55;
+  text-shadow: 0 3px 10px rgba(20, 8, 38, 0.9);
+  box-shadow: none;
+}
+
+.session-screen .page-reading-text .reading-word.is-read {
+  color: #ffe080;
+  text-shadow: 0 0 12px #ffd84d, 0 3px 10px rgba(20, 8, 38, 0.9);
+}
+
+/* Keep the recording icon and encouragement together at the lower edge. */
+.session-screen .noor-row {
+  position: absolute;
+  inset-inline: 14px;
+  bottom: 92px;
+  z-index: 2;
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+
+/* Recording has no bottom CTA, so the feedback group can sit closest to the edge. */
+.session-screen.phase-recording .noor-row {
+  bottom: 18px;
+}
+
+/* Leave enough room for retry, evaluation, and navigation controls. */
+.session-screen.phase-processing .noor-row,
+.session-screen.phase-narrator .noor-row {
+  bottom: 96px;
+}
+
+.session-screen.phase-retry .noor-row,
+.session-screen.phase-continue .noor-row {
+  bottom: 188px;
+}
+
+.session-screen .session-recording-heading,
+.session-screen .session-record-control {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.session-screen .session-recording-time {
+  min-width: 76px;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  background: rgba(28, 13, 46, 0.68);
+  color: #ffffff;
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 6px 14px rgba(17, 7, 31, 0.25);
+  backdrop-filter: blur(6px);
+}
+
+/* Respect device-level motion preferences without changing the reading flow. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast for text that must sit directly on varying story artwork. */
+.session-screen .page-reading-text {
+  color: #ffffff;
+  -webkit-text-stroke: 0.7px rgba(31, 16, 52, 0.72);
+  paint-order: stroke fill;
+  text-shadow:
+    0 2px 2px rgba(27, 12, 44, 0.95),
+    0 0 12px rgba(27, 12, 44, 0.58);
+}
+}
+
+.session-screen .retry-hint,
+.session-screen .listen-to-reading {
+  width: min(100%, 420px);
+  margin-inline: auto;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #2b1843;
+  box-shadow: 0 10px 22px rgba(23, 9, 38, 0.24);
+  backdrop-filter: blur(8px);
+}
+
+.session-screen .retry-hint {
+  display: grid;
+  gap: 5px;
+  text-align: center;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.session-screen .retry-hint span {
+  color: #683089;
+}
+
+.session-screen .retry-hint strong,
+.session-screen .listen-to-reading summary {
+  color: #261238;
+  font-weight: 900;
+}
+
+.session-screen .listen-to-reading audio {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
 }
