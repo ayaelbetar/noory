@@ -1,0 +1,38 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies, logs, and generated output
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+coverage/
+.cache/
+
+# Local recordings, databases, and temporary output
+tmp-recordings/
+recordings/
+private-recordings/
+uploads/
+*.webm
+*.wav
+*.m4a
+*.ogg
+*.sqlite
+*.sqlite3
+*.log
+
+# Local archives can contain copies of source files or private test material.
+*.zip
+
+# Editors and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

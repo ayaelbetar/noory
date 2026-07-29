@@ -1,0 +1,11 @@
+{
+  "name": "noory-demo-poc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check src/app-v2.js && node --check src/core/messages.js && node --check src/data/books.js && node --check src/features/analytics/analytics.js && node --check src/features/playback/narrator.js && node --check src/features/playback/voice-feedback.js && node --check src/features/reading/evaluator.js && node --check src/features/reading/feedback.js && node --check src/features/reading/session-guards.js && node --check src/features/recording/recorder.js",
+    "test": "node --test tests/evaluator.test.js tests/narrator.test.js tests/feedback.test.js tests/voice-feedback.test.js tests/session-guards.test.js"
+  }
+}
