@@ -30,9 +30,9 @@ Define how **Read with Noor** is verified before release: test layers, environme
 | Layer | Scope | Owner | Tools / notes |
 |-------|--------|-------|----------------|
 | **L1 — Unit** | Arabic evaluator, feedback, narrator, voice-feedback, and session-guard modules | Eng | Node.js built-in test runner (`node --test`) |
-| **L2 — Browser UI / integration** | RTL layouts, CTA behavior, loading states, local mock outcomes | Eng / QA | Manual browser UI checks; automate JavaScript modules with Node.js tests where applicable |
+| **L2 — Browser UI / integration** | RTL layouts, CTA behavior, loading states, local mock outcomes | Eng / QA | Browser integration and DOM tests where practical; manual responsive and accessibility checks across target viewports |
 | **L3 — API contract** | POST `/evaluate` request/response, HTTP codes, `error.code` set, timeouts | Eng / QA | Contract tests vs `15`; optional mock server |
-| **L4 — End-to-end (manual + automated)** | Full **Reading Session** on device: consent → record → outcomes → summary | QA | Real devices; staged backend |
+| **L4 — End-to-end (manual + automated)** | Full **Reading Session** on device: consent → record → outcomes → summary | QA | Manual browser/device checks for the POC; optional future Playwright (or equivalent) E2E coverage |
 | **L5 — Exploratory** | UX tone, delight rotation, child comprehension (3–8) | UX / QA | Session notes; Arabic-native facilitators preferred |
 | **L6 — Non-functional** | Recording start ≤2s, p95 evaluate ≤8s (staging), 120s/8MB guards | Eng / QA | Performance scripts; load on `/evaluate` |
 | **L7 — Accessibility** | Touch target size, contrast, Arabic TalkBack labels | QA / UX | Per `09_UI_UX_Guidelines.md` + age band table below |

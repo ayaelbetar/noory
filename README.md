@@ -1,4 +1,6 @@
-# Noory — نوري | Read with Noor — اقرأ مع نور
+# Noory — نوري
+
+## Read with Noor — اقرأ مع نور
 
 Browser proof of concept for Arabic, RTL reading practice for children aged 3–8. A child reads a story page aloud, receives Success or Retry, hears the exact page narrated after Retry, and finishes with a book-level reading summary.
 
