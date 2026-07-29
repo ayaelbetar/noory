@@ -936,13 +936,13 @@ function renderSession() {
         <section class="page-shell">
           <div class="page-scene" role="img" aria-label="رسم القصة"></div>
           <div class="page-reading-text"></div>
-          <div class="noor-row">
-            <div class="session-recording-heading"></div>
-            <div class="noor-bubble" role="status" aria-live="polite" aria-atomic="true"></div>
-          </div>
           <div id="toast-container"></div>
-          <div id="phase-controls-container"></div>
         </section>
+        <div class="noor-row">
+          <div class="session-recording-heading"></div>
+          <div class="noor-bubble" role="status" aria-live="polite" aria-atomic="true"></div>
+        </div>
+        <div id="phase-controls-container"></div>
       </main>
     `;
   }
