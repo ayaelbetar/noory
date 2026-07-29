@@ -1,4 +1,4 @@
-# Read with Noor — Interactive Reading Buddy
+# Read with Noory — Interactive Reading Buddy
 
 Browser proof of concept for Arabic, RTL reading practice for children aged 3–8. A child reads a story page aloud, receives Success or Retry, hears the exact page narrated after Retry, and finishes with a book-level reading summary.
 
