@@ -3,7 +3,7 @@
 **Version:** 1.0  
 **Status:** Final — companion to `11_Message_Library.md`  
 **Audience:** Content, UX, Engineering, QA  
-**Product:** Noory · **AI Reading Buddy** · **Noor**
+**Main application:** Noory — نوري · **Feature:** Read with Noor — اقرأ مع نور · **Reading companion:** Noor — نور
 
 ---
 

@@ -1,6 +1,8 @@
 # Noor Character Bible
 
-**Product:** AI Reading Buddy for Noory  
+**Main application:** Noory — نوري
+**Feature:** Read with Noor — اقرأ مع نور
+**Reading companion:** Noor — نور
 **Audience:** Product, UX, content, engineering, animation, audio  
 **Age range:** Arabic-speaking children **3–8**  
 **Version:** 1.0  

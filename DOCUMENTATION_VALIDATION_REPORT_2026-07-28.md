@@ -1,5 +1,7 @@
 # Documentation Validation Report — Noory Read with Noor
 
+**Product hierarchy:** **Noory — نوري** is the main application; **Read with Noor — اقرأ مع نور** is its interactive reading feature; **Noor — نور** is the reading companion character.
+
 **Validation date:** 2026-07-28  
 **Package path:** `<repository root>`  
 **Validator role:** Final pre-implementation documentation validation  

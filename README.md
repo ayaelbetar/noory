@@ -1,8 +1,12 @@
-# Read with Noory — Interactive Reading Buddy
+# Noory — نوري | Read with Noor — اقرأ مع نور
 
 Browser proof of concept for Arabic, RTL reading practice for children aged 3–8. A child reads a story page aloud, receives Success or Retry, hears the exact page narrated after Retry, and finishes with a book-level reading summary.
 
 ## Overview
+
+**Noory — نوري** is the main application. **Read with Noor — اقرأ مع نور** is an interactive reading feature inside Noory, helping children read and understand with **Noor — نور** as their reading companion.
+
+اقرأ مع نور هي ميزة قراءة تفاعلية داخل تطبيق نوري، تساعد الأطفال على القراءة والفهم بمرافقة شخصية نور.
 
 Read with Noor makes read-aloud practice supportive rather than exam-like. Noor encourages the child, while narrator help appears only after a genuine Retry. The POC uses browser recording and local Arabic text comparison; it does not connect to a hosted AI evaluation service.
 

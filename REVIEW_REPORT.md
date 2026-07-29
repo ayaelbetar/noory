@@ -1,6 +1,7 @@
 # Product Review Board — Documentation Audit Report
 
 **Project:** Noory · **Feature:** Read with Noor  
+**Reading companion:** Noor — نور
 **Audit date:** 2026-07-27  
 **Auditors (roles):** Head of Product, Principal PM, Principal UX, Staff Architect, Senior QA, AI Architect, Technical Writer  
 **Scope:** All markdown specifications in `noor/` (excluding `_docgen/node_modules`)  

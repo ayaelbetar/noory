@@ -6,6 +6,8 @@
 **Status:** **PRODUCTION READY — FROZEN** (2026-07-28)  
 **Purpose:** Primary navigation entry for the Read with Noor specification package.
 
+**Product hierarchy:** **Noory — نوري** is the main application; **Read with Noor — اقرأ مع نور** is its interactive reading feature; **Noor — نور** is the reading companion character.
+
 **Rule:** Each topic has exactly one **owner** document. If two files disagree, the owner wins (see registry below).
 
 ---

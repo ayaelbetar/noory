@@ -1,12 +1,14 @@
 # Read with Noor — MVP Product Requirements Document
 
 **Status:** Implementation-ready MVP specification  
-**Feature type:** A reading-assistance feature inside the existing Noory children's app  
+**Product hierarchy:** **Noory — نوري** is the main application; **Read with Noor — اقرأ مع نور** is its interactive reading feature; **Noor — نور** is the reading companion character.
 **Audience:** Product, UI/UX, Flutter, Backend, AI, QA, and Content teams
 
 ## 1. Executive Summary
 
-**Read with Noor** helps children aged 3–8 practise reading story pages aloud. The child records their reading; the system evaluates it against the expected page text and returns either **Success** or **Try Again**. When help is needed, Noor automatically plays the professional narration for that exact page before the child records again.
+Read with Noor is an interactive reading feature inside the Noory application, helping children read and understand with Noor as their reading companion. اقرأ مع نور هي ميزة قراءة تفاعلية داخل تطبيق نوري، تساعد الأطفال على القراءة والفهم بمرافقة شخصية نور.
+
+The feature helps children aged 3–8 practise reading story pages aloud. The child records their reading; the system evaluates it against the expected page text and returns either **Success** or **Try Again**. When help is needed, Noor automatically plays the professional narration for that exact page before the child records again.
 
 The MVP goal is a safe, encouraging, Arabic-first reading loop that makes practice feel like a conversation with Noor rather than an exam.
 

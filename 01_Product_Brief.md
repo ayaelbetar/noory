@@ -1,6 +1,6 @@
 # 01_Product_Brief
 
-# AI Reading Buddy for Noory
+# Noory — نوري | Read with Noor — اقرأ مع نور
 
 **Version:** 1.2  
 **Status:** Final — engineering handoff

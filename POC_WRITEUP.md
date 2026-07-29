@@ -1,4 +1,4 @@
-# Noory Demo - PE Assessment Write-Up
+# Noory — نوري | Read with Noor — اقرأ مع نور POC Assessment
 
 ## 1. Research and Failed Trials
 

@@ -1,6 +1,6 @@
 # 17_Project_Writeup
 
-# AI Reading Buddy for Noory
+# Noory — نوري | Read with Noor — اقرأ مع نور
 
 ## Stakeholder Summary (non-spec)
 

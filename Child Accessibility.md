@@ -1,6 +1,6 @@
 # Child Accessibility
 
-**Product:** AI Reading Buddy for Noory · **Read with Noor**  
+**Main application:** Noory — نوري · **Feature:** Read with Noor — اقرأ مع نور · **Reading companion:** Noor — نور
 **Audience:** UX, engineering, QA, caregivers (via in-app guardian copy where applicable)  
 **Age range:** **3–8** (Arabic-speaking children)  
 **Version:** 1.0  

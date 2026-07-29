@@ -1,4 +1,4 @@
-# Read with Noor — UI/UX Audit
+# Noory — نوري | Read with Noor — اقرأ مع نور UI/UX Audit
 
 Audit date: 2026-07-29  
 Scope: Read with Noor POC; child (3–8) and parent/guardian journeys.  

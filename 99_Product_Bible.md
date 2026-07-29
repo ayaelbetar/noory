@@ -1,6 +1,6 @@
 # 99_Product_Bible
 
-# AI Reading Buddy for Noory
+# Noory — نوري | Read with Noor — اقرأ مع نور
 
 ## Executive Product Bible
 

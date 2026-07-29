@@ -1,6 +1,6 @@
 # 00_Project_Principles
 
-# AI Reading Buddy for Noory
+# Noory — نوري | Read with Noor — اقرأ مع نور
 
 **Version:** 1.0  
 **Status:** Approved — source of truth for principle conflicts  

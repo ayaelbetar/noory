@@ -1,4 +1,6 @@
-# Noory Demo POC
+# Noory — نوري | Read with Noor — اقرأ مع نور POC
+
+Read with Noor is an interactive reading feature inside the Noory application, with Noor as the reading companion character.
 
 Mobile-friendly web POC for the PE assessment: a child opens an Arabic book, reads each page aloud, records their voice, gets immediate Success or Retry feedback, hears page narration after Retry, and sees a final reading summary.
 

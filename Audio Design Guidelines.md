@@ -1,6 +1,6 @@
 # Audio Design Guidelines
 
-**Product:** AI Reading Buddy for Noory · **Read with Noor**  
+**Main application:** Noory — نوري · **Feature:** Read with Noor — اقرأ مع نور · **Reading companion:** Noor — نور
 **Audience:** Sound design, engineering, UX, QA  
 **Age range:** Children **3–8**  
 **Version:** 1.0  

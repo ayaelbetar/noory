@@ -3,6 +3,8 @@
 **Review date:** 29 July 2026  
 **Scope:** Final local release review of the active Read with Noor POC. No commit, remote change, or push was performed.
 
+**Product hierarchy:** **Noory — نوري** is the main application; **Read with Noor — اقرأ مع نور** is its interactive reading feature; **Noor — نور** is the reading companion character.
+
 ## Final Review Summary
 
 The active application is `index.html` → `src/app-v2.js`. The recording, local evaluation, narrator, optional Noor voice, local-storage recovery, analytics, and edge-case guard modules are present and pass their automated checks. Recent UI assets are repository-relative and resolve from the local server.

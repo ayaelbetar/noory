@@ -1,10 +1,12 @@
-# Product Manager Assessment Write-Up — Read with Noor
+# Product Manager Assessment Write-Up — Noory / نوري · Read with Noor / اقرأ مع نور
 
 ## 1. Document Information
 
 | Field | Detail |
 | --- | --- |
-| Product | **Read with Noor** — Interactive Reading Buddy for Noory |
+| Main application | **Noory — نوري** |
+| Feature | **Read with Noor — اقرأ مع نور** |
+| Reading companion | **Noor — نور** |
 | Deliverable | Product Manager Assessment Write-Up |
 | Product stage | Browser POC / MVP definition |
 | Primary users | Arabic-speaking children aged 3–8 |
@@ -15,7 +17,9 @@
 
 ## 2. Executive Summary
 
-Read with Noor is a child-first Arabic reading practice experience. A child chooses a story, reads a displayed page aloud, records their voice, and receives one of two simple outcomes: **Success** or **Try Again**. A Retry automatically triggers narration of that exact page, after which the child can try again. After three evaluated Retry outcomes on one page, the child may continue so that difficulty does not prevent finishing the book. Completing the final page leads to a Reading Summary with a simple book-level score.
+Read with Noor is an interactive reading feature inside the Noory application, helping children read and understand with Noor as their reading companion. اقرأ مع نور هي ميزة قراءة تفاعلية داخل تطبيق نوري، تساعد الأطفال على القراءة والفهم بمرافقة شخصية نور.
+
+A child chooses a story, reads a displayed page aloud, records their voice, and receives one of two simple outcomes: **Success** or **Try Again**. A Retry automatically triggers narration of that exact page, after which the child can try again. After three evaluated Retry outcomes on one page, the child may continue so that difficulty does not prevent finishing the book. Completing the final page leads to a Reading Summary with a simple book-level score.
 
 The local POC implements a meaningful version of this core loop rather than static screens only: browser microphone capture, optional browser Arabic speech recognition, local Arabic-text similarity evaluation, Retry narration, a three-Retry Continue decision, an end summary, local consent gating, browser-side session guards, and unit tests for core service logic. It is not yet a production AI-evaluation service. The `/evaluate` API, real provider integration, production consent/retention controls, persistent analytics, teacher calibration, and device E2E testing remain unimplemented or unverified.
 
