@@ -29,8 +29,8 @@ Define how **Read with Noor** is verified before release: test layers, environme
 
 | Layer | Scope | Owner | Tools / notes |
 |-------|--------|-------|----------------|
-| **L1 — Unit** | State reducer transitions, Session Store math (`completedPages`), message placeholder substitution, failureCode mapping | Eng | Dart unit tests |
-| **L2 — Widget / integration** | RTL layouts, CTA debounce, loading states, mock API outcomes | Eng / QA | Flutter integration tests |
+| **L1 — Unit** | Arabic evaluator, feedback, narrator, voice-feedback, and session-guard modules | Eng | Node.js built-in test runner (`node --test`) |
+| **L2 — Browser UI / integration** | RTL layouts, CTA behavior, loading states, local mock outcomes | Eng / QA | Manual browser UI checks; automate JavaScript modules with Node.js tests where applicable |
 | **L3 — API contract** | POST `/evaluate` request/response, HTTP codes, `error.code` set, timeouts | Eng / QA | Contract tests vs `15`; optional mock server |
 | **L4 — End-to-end (manual + automated)** | Full **Reading Session** on device: consent → record → outcomes → summary | QA | Real devices; staged backend |
 | **L5 — Exploratory** | UX tone, delight rotation, child comprehension (3–8) | UX / QA | Session notes; Arabic-native facilitators preferred |
