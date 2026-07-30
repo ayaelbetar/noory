@@ -1,4 +1,4 @@
-# Noory — نوري | Read with Noor — اقرأ مع نور POC
+﻿# Noory ÔÇö ┘å┘êÏ▒┘è | Read with Noor ÔÇö Ïº┘éÏ▒Ïú ┘àÏ╣ ┘å┘êÏ▒ POC
 
 Read with Noor is an interactive reading feature inside the Noory application, with Noor as the reading companion character.
 

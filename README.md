@@ -62,10 +62,8 @@ src/
   data/books.js               Demo story data
   features/                   Recording, evaluation, audio, analytics, guards
 tests/                        Node unit tests
+archive/reviews/              Historical audits and meta reports (non-normative)
 Read_with_Noor_MVP_PRD.md     MVP requirements
-PRODUCT_MANAGER_ASSESSMENT.md Product assessment and implementation evidence
-CODE_REVIEW_AND_GITHUB_READINESS.md
-                              GitHub-readiness review and remaining actions
 ```
 
 ## Getting Started
@@ -99,7 +97,7 @@ Never put real keys in browser code, documentation, or `.env.example`. `.env` is
 
 The POC already runs with no external service. Browser STT, when available, creates a transcript that is normalised and compared locally with expected page text. A score of at least `0.70` is Success; otherwise the local evaluator returns Retry.
 
-For deterministic verification, use the unit tests rather than browser STT.
+For deterministic verification, use the unit tests rather than browser STT. When the browser records audio but does not return Arabic speech recognition text, the POC shows a small assisted transcript input so the assessment flow can still be tested manually.
 
 ## Testing the Core Flow
 
@@ -133,9 +131,9 @@ No formatter, linter, type checker, or build script is configured. This static P
 ## Assessment Coverage
 
 - [MVP PRD](Read_with_Noor_MVP_PRD.md)
-- [Product Manager Assessment](PRODUCT_MANAGER_ASSESSMENT.md)
-- [GitHub Readiness Review](CODE_REVIEW_AND_GITHUB_READINESS.md)
-- [QA Strategy](QA%20Test%20Strategy.md)
+- [Product Manager Assessment](archive/reviews/PRODUCT_MANAGER_ASSESSMENT.md) (archived)
+- [GitHub Readiness Review](archive/reviews/CODE_REVIEW_AND_GITHUB_READINESS.md) (archived)
+- [QA Strategy](QA Test Strategy.md)
 
 ## Privacy and Safety
 

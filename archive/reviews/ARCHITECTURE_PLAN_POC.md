@@ -1,4 +1,4 @@
-# Noory Demo POC Architecture Plan
+﻿# Noory Demo POC Architecture Plan
 
 ## What I Understood
 

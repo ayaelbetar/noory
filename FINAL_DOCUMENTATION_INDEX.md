@@ -1,8 +1,8 @@
 # Final Documentation Index
 
-**Version:** 1.2  
-**Status:** **PRODUCTION READY — FROZEN** (Documentation Validation 2026-07-28)  
-**Last updated:** 2026-07-28  
+**Version:** 1.3
+**Status:** **PRODUCTION READY — FROZEN** (Documentation Validation 2026-07-28)
+**Last updated:** 2026-07-30
 **Purpose:** Single registry of every specification file: owner, scope, dependencies, and who references it.
 
 **Rule:** If two documents define the same behavior, the **Owner** row wins. All others must reference the owner, not copy normative text.
@@ -70,7 +70,7 @@
 | `Gamification Rules.md` | **Celebration (MVP)** | What is / is not gamification in MVP | `00`, `11` | PM, QA |
 | `UX Writing Guide.md` | **Copy process** | How to add keys; not duplicate strings | `11`, `README` terms | Content, Eng |
 | `Developer Notes.md` | **Engineering notes** | Flutter module, sync rules, test matrix | `15`, `13`, `16` | Eng |
-| `QA Test Strategy.md` | **QA strategy** | Layers, flows F1–F10, oracles | `07`, `08`, owners | QA |
+| `QA Test Strategy.md` | **QA strategy** | Layers, flows F1–F11, oracles | `07`, `08`, owners | QA |
 | `Future Roadmap.md` | **Platform phases** | Post-MVP Noory phases (not MVP scope) | `18`, `01` | PM |
 
 ---
@@ -83,10 +83,9 @@
 | `ARCHITECTURE_OVERVIEW.md` | How documents relate (graph + layers) |
 | `FINAL_DOCUMENTATION_INDEX.md` | Full file registry (owner, depends, referenced-by) |
 | `REVIEW_REPORT.md` | Latest Product Review Board audit |
-| `archive/reviews/` | Historical audits (`REVIEW_REPORT_v1`–`v3`, `FINAL_RELEASE_REPORT`, `FINAL_IMPLEMENTATION_AUDIT`) |
+| `archive/reviews/README.md` | Archive index for non-normative meta reports |
+| `archive/reviews/` | Refactor & validation reports, code review, UI audit, PM assessment (2026-07-28–29) |
 | `CHANGELOG.md` | Documentation change log |
-| `DOCUMENTATION_REFACTOR_REPORT_2026-07-28.md` | Consolidation audit (2026-07-28) |
-| `DOCUMENTATION_VALIDATION_REPORT_2026-07-28.md` | Final validation + freeze sign-off |
 
 ---
 

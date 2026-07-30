@@ -6,6 +6,15 @@ Format: date — summary (files touched).
 
 ---
 
+## 2026-07-30 — Repository cleanup
+
+- **Deleted:** legacy `src/app.js` (superseded by `src/app-v2.js`).
+- **Archived to `archive/reviews/`:** outdated POC docs (`README_POC.md`, `ARCHITECTURE_PLAN_POC.md`, `POC_WRITEUP.md`) plus meta reports (refactor, validation, code review, UI audit, PM assessment).
+- **Updated:** `00_Index.md`, `FINAL_DOCUMENTATION_INDEX.md`, `README.md`; fixed QA registry row to **F1–F11**.
+- No product spec or runtime behavior changes.
+
+---
+
 ## 2026-07-28 — Final validation & freeze
 
 - **`DOCUMENTATION_VALIDATION_REPORT_2026-07-28.md`:** 20/20 validation criteria pass; **STATUS: PRODUCTION READY — FROZEN**.

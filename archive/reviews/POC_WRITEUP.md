@@ -1,4 +1,4 @@
-# Noory — نوري | Read with Noor — اقرأ مع نور POC Assessment
+﻿# Noory ÔÇö ┘å┘êÏ▒┘è | Read with Noor ÔÇö Ïº┘éÏ▒Ïú ┘àÏ╣ ┘å┘êÏ▒ POC Assessment
 
 ## 1. Research and Failed Trials
 

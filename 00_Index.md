@@ -1,7 +1,7 @@
 # Noory Documentation Index
 
-**Version:** 1.2  
-**Last updated:** 2026-07-28  
+**Version:** 1.3
+**Last updated:** 2026-07-30
 **Owner:** Product + Technical Writing  
 **Status:** **PRODUCTION READY — FROZEN** (2026-07-28)  
 **Purpose:** Primary navigation entry for the Read with Noor specification package.
@@ -25,7 +25,7 @@
 **Full registry (owners, dependencies, cross-refs):** `FINAL_DOCUMENTATION_INDEX.md`  
 **How specs relate (layers, flows):** `ARCHITECTURE_OVERVIEW.md`  
 **Latest documentation audit:** `REVIEW_REPORT.md`  
-**Latest validation:** `DOCUMENTATION_VALIDATION_REPORT_2026-07-28.md`  
+**Latest validation (archived):** `archive/reviews/DOCUMENTATION_VALIDATION_REPORT_2026-07-28.md`
 **Documentation change log:** `CHANGELOG.md`
 
 ---
@@ -60,7 +60,7 @@
 
 ## Archive (non-normative)
 
-Historical audits and implementation reports live in `archive/reviews/`. Do not use them as current behavior oracles.
+Historical audits, validation reports, code reviews, and assessments live in `archive/reviews/`. See `archive/reviews/README.md`. Do not use them as current behavior oracles.
 
 ---
 
@@ -68,5 +68,4 @@ Historical audits and implementation reports live in `archive/reviews/`. Do not 
 
 - `FINAL_DOCUMENTATION_INDEX.md` — complete file registry  
 - `REVIEW_REPORT.md` — Product Review Board audit (2026-07-27)  
-- `DOCUMENTATION_REFACTOR_REPORT_2026-07-28.md` — consolidation pass (this cycle)
-- `DOCUMENTATION_VALIDATION_REPORT_2026-07-28.md` — final validation & **PRODUCTION READY — FROZEN**
+- `archive/reviews/` — consolidation, validation, code review, UI audit, PM assessment (2026-07-28–29)
