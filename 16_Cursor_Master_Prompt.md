@@ -55,7 +55,9 @@ Read **every** markdown file below in order:
 
 **Non-negotiable:** Child tries first on every page; Noor/narrator never before first attempt (`00` §3a). No child-visible scores or forbidden words (`11`, `UX Writing Guide.md`).
 
-Also read `REVIEW_REPORT.md` for the latest audit. Historical audits are in `archive/reviews/` (non-normative).
+For the submitted implementation, read `docs/manager-delivery-pack.md` and
+`docs/github-readiness-report.md`; the root specification package remains a
+frozen planning baseline.
 
 Also read `FINAL_DOCUMENTATION_INDEX.md` and `ARCHITECTURE_OVERVIEW.md` before coding.
 

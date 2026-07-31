@@ -6,6 +6,8 @@ professional narrator for that exact page after **Try Again**.
 
 Repository: [github.com/ayaelbetar/noory](https://github.com/ayaelbetar/noory)
 
+Manager handoff: [docs/manager-delivery-pack.md](docs/manager-delivery-pack.md)
+
 ## Included books
 
 - **حرف الباء** — 9 active pages. The book is fully available: its word pages

@@ -56,7 +56,7 @@ No physical file merges deleted numbered specs (`00`–`20` retained for histori
 
 | File | Reason |
 |------|--------|
-| *(none)* | Historical audits in `archive/reviews/` (`REVIEW_REPORT_v1.md`, `v2`, `v3`) |
+| Historical audits | Removed from the submitted repository; do not treat them as current behavior oracles |
 | Temp scripts | Removed during `11` rebuild (`_fix_encoding.js`, etc.) |
 
 ---
@@ -65,7 +65,7 @@ No physical file merges deleted numbered specs (`00`–`20` retained for histori
 
 | From | To |
 |------|-----|
-| `REVIEW_REPORT.md` (initial audit) | `archive/reviews/REVIEW_REPORT_v1.md` |
+| `REVIEW_REPORT.md` (initial audit) | Superseded historical report; not included in the submitted repository |
 
 **Latest audit:** this `REVIEW_REPORT.md`.
 
@@ -139,7 +139,7 @@ No physical file merges deleted numbered specs (`00`–`20` retained for histori
 ## Remaining recommendations (non-blocking)
 
 1. **Flutter `messages_ar.json`:** Align to **`11`** only—remove or remap keys with scores/emojis not in **`11`** (`Developer Notes` §Copy sync). Track as engineering task, not spec gap.  
-2. **`archive/reviews/`** (`REVIEW_REPORT_v2.md` / `v3` / `FINAL_RELEASE_REPORT.md` / `FINAL_IMPLEMENTATION_AUDIT.md`): Historical; scores reflect pre–v2.0 or implementation snapshot state—do not use for current oracles.  
+2. **Historical reports:** Scores reflected pre–v2.0 or implementation snapshots and are not included in the submitted repository; do not use them as current behavior oracles.
 3. **DOCX package:** Keep in sync via change control when **`11`** or API changes (`README` Appendix B).  
 4. **Optional:** Add `library.*` keys to **`11`** if product adopts search/filter strings currently only in JSON.
 

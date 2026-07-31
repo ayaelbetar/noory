@@ -75,16 +75,16 @@
 
 ---
 
-## Meta & historical (non-normative for behavior)
+## Navigation and delivery boundary
 
 | Document | Purpose |
 |----------|---------|
 | `00_Index.md` | Primary navigation entry; quick owner lookup |
 | `ARCHITECTURE_OVERVIEW.md` | How documents relate (graph + layers) |
 | `FINAL_DOCUMENTATION_INDEX.md` | Full file registry (owner, depends, referenced-by) |
-| `REVIEW_REPORT.md` | Latest Product Review Board audit |
-| `archive/reviews/README.md` | Archive index for non-normative meta reports |
-| `archive/reviews/` | Refactor & validation reports, code review, UI audit, PM assessment (2026-07-28–29) |
+| `REVIEW_REPORT.md` | Frozen Product Review Board audit |
+| `docs/manager-delivery-pack.md` | Current manager handoff for the submitted POC |
+| `docs/` | Current POC rationale, readiness, and compliance reports |
 | `CHANGELOG.md` | Documentation change log |
 
 ---

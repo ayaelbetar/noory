@@ -9,7 +9,7 @@ Format: date — summary (files touched).
 ## 2026-07-30 — Repository cleanup
 
 - **Deleted:** legacy `src/app.js` (superseded by `src/app-v2.js`).
-- **Archived to `archive/reviews/`:** outdated POC docs (`README_POC.md`, `ARCHITECTURE_PLAN_POC.md`, `POC_WRITEUP.md`) plus meta reports (refactor, validation, code review, UI audit, PM assessment).
+- **Removed from the submitted repository:** outdated POC docs (`README_POC.md`, `ARCHITECTURE_PLAN_POC.md`, `POC_WRITEUP.md`) plus historical meta reports. Current handoff material lives in `docs/`.
 - **Updated:** `00_Index.md`, `FINAL_DOCUMENTATION_INDEX.md`, `README.md`; fixed QA registry row to **F1–F11**.
 - No product spec or runtime behavior changes.
 
@@ -29,7 +29,7 @@ Format: date — summary (files touched).
 - **`00_Index.md`:** Primary navigation entry; canonical owner quick lookup.
 - **`18_Future_Ideas.md`:** Removed duplicated phased roadmap; **`Future Roadmap.md`** remains phase owner.
 - **`12_AI_Evaluation_Flow.md`:** Internal band table removed; **`Reading Evaluation Rules.md`** is sole band owner.
-- **`archive/reviews/`:** Moved `REVIEW_REPORT_v1`–`v3`, `FINAL_RELEASE_REPORT`, `FINAL_IMPLEMENTATION_AUDIT`.
+- Historical `REVIEW_REPORT_v1`–`v3`, `FINAL_RELEASE_REPORT`, and `FINAL_IMPLEMENTATION_AUDIT` are not part of the submitted repository.
 - Updated **`README.md`**, **`FINAL_DOCUMENTATION_INDEX.md`**, **`16_Cursor_Master_Prompt.md`**, **`99_Product_Bible.md`** metadata and archive paths.
 - Added **`DOCUMENTATION_REFACTOR_REPORT_2026-07-28.md`**.
 

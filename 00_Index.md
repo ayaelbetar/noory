@@ -25,7 +25,7 @@
 **Full registry (owners, dependencies, cross-refs):** `FINAL_DOCUMENTATION_INDEX.md`  
 **How specs relate (layers, flows):** `ARCHITECTURE_OVERVIEW.md`  
 **Latest documentation audit:** `REVIEW_REPORT.md`  
-**Latest validation (archived):** `archive/reviews/DOCUMENTATION_VALIDATION_REPORT_2026-07-28.md`
+**Current manager handoff:** `docs/manager-delivery-pack.md`
 **Documentation change log:** `CHANGELOG.md`
 
 ---
@@ -60,7 +60,10 @@
 
 ## Archive (non-normative)
 
-Historical audits, validation reports, code reviews, and assessments live in `archive/reviews/`. See `archive/reviews/README.md`. Do not use them as current behavior oracles.
+The root markdown package is the frozen 2026-07-28 specification baseline.
+Current submitted-POC behavior, validation, and delivery status live in
+`README.md` and `docs/`. The removed historical review archive is not a
+repository navigation target.
 
 ---
 
@@ -68,4 +71,4 @@ Historical audits, validation reports, code reviews, and assessments live in `ar
 
 - `FINAL_DOCUMENTATION_INDEX.md` — complete file registry  
 - `REVIEW_REPORT.md` — Product Review Board audit (2026-07-27)  
-- `archive/reviews/` — consolidation, validation, code review, UI audit, PM assessment (2026-07-28–29)
+- `docs/manager-delivery-pack.md` — current manager handoff and scope boundary
