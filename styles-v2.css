@@ -577,7 +577,7 @@ button.category-item {
   width: 100%;
   min-height: 34px;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   flex-wrap: nowrap;
   gap: 6px;
 }
