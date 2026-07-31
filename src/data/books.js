@@ -11,7 +11,7 @@ const storyPage = (bookId, number, text, audioFile, sourcePdfPage = number, acti
   // Ground truth for child-reading evaluation. This is never Nouri UI copy.
   expectedText: text,
   displayText: activity.displayText || text,
-  activityType: activity.activityType || "reading",
+  activityType: activity.activityType || "story",
   expectedSpokenForm: activity.expectedSpokenForm || text,
   expectedPhonemes: activity.expectedPhonemes || [],
   narratorReferenceAudioUrl: activity.narratorReferenceAudioUrl || "",
@@ -29,12 +29,12 @@ const storyPage = (bookId, number, text, audioFile, sourcePdfPage = number, acti
 // reading item for the child.
 const baa = [
   [2, "بَ", { displayText: "بَ", activityType: "letter-sound", expectedSpokenForm: "بَ", expectedPhonemes: ["b", "a"], letterActivity: getArabicLetterActivity("baa-fatha") }],
-  [3, "بَيْتٌ"], [5, "بَحْرٌ"],
+  [3, "بَيْتٌ", { activityType: "word" }], [5, "بَحْرٌ", { activityType: "word" }],
   [6, "بِ", { displayText: "بِ", activityType: "letter-sound", expectedSpokenForm: "بِ", expectedPhonemes: ["b", "i"], letterActivity: getArabicLetterActivity("baa-kasra") }],
-  [7, "بِطِّيخٌ"], [9, "بِنْتٌ"],
+  [7, "بِطِّيخٌ", { activityType: "word" }], [9, "بِنْتٌ", { activityType: "word" }],
   [10, "بُ", { displayText: "بُ", activityType: "letter-sound", expectedSpokenForm: "بُ", expectedPhonemes: ["b", "u"], letterActivity: getArabicLetterActivity("baa-damma") }],
-  [11, "بُومَةٌ"],
-  [13, "بُرْتُقَالٌ"]
+  [11, "بُومَةٌ", { activityType: "word" }],
+  [13, "بُرْتُقَالٌ", { activityType: "word" }]
 ].map(([sourcePdfPage, text, activity], index) => storyPage(
   "baa",
   index + 1,
@@ -68,7 +68,6 @@ export const books = [
     id: "baa",
     title: "حرف الباء",
     level: "تدريب الحروف",
-    practiceOnly: true,
     minutes: 3,
     coverColor: "linear-gradient(135deg, #f6b73c, #e67237)",
     coverImage: "./assets/books/baa/pages/page-01.webp",

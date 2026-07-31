@@ -29,8 +29,8 @@ const NOURI_ENABLED = false;
 const PARENT_CONSENT_STORAGE_KEY = "noory.readWithNoorConsent";
 const SESSION_STORAGE_KEY = "noory.readWithNoorSession";
 const EVALUATION_TIMEOUT_MS = 30_000;
-// The letter book is visible as clearly labelled, non-scored practice. Its
-// short-vowel activities never claim an unverified success.
+// The letter book is fully available. Only its isolated short-vowel activities
+// use the conservative experimental flow and never claim unverified success.
 const visibleBooks = books;
 const discoveryItems = [
   { label: "هو الحبيب", className: "category-cover prophet", action: "", imageUrl: "./assets/images/noory-categories/ho-el-habib.jfif" },
@@ -890,9 +890,8 @@ function renderHome() {
       <section class="content-section">
         <div class="section-head">
           <h2 class="section-title--compact">قصص اقرأ مع نور</h2>
-          <button class="text-link" data-action="catalog">مشاهدة الكل</button>
         </div>
-        <div class="book-shelf book-shelf--rail" aria-label="باقي قصص اقرأ مع نور">
+        <div class="book-shelf book-shelf--home" aria-label="قصص اقرأ مع نور">
           ${visibleBooks.map(homeBookCard).join("")}
         </div>
       </section>
@@ -966,11 +965,9 @@ function homeBookCard(book) {
   return `
     <button class="home-book-card" data-action="details" data-book-id="${book.id}">
       ${bookCover(book, "home-cover")}
-      <span class="home-book-title">${book.title}</span>
-      <span class="chip-row">
-        <span class="soft-chip">${book.level}</span>
-        ${book.practiceOnly ? `<span class="soft-chip">تدريب غير محسوب</span>` : ""}
-        <span class="soft-chip">${toArabicNumber(book.pages.length)} صفحات</span>
+      <span class="chip-row home-book-meta">
+        <span class="soft-chip">جميع الأعمار</span>
+        <span class="noory-original" aria-label="أعمال نوري الأصلية"><span aria-hidden="true">♛</span> نوري</span>
       </span>
     </button>
   `;
@@ -1002,7 +999,6 @@ function storyCard(book) {
         <h3>${book.title}</h3>
         <span class="badge-row">
           <span class="badge">${book.level}</span>
-          ${book.practiceOnly ? `<span class="badge">تدريب غير محسوب</span>` : ""}
           <span class="badge">${toArabicNumber(book.pages.length)} صفحات</span>
           <span class="badge">${toArabicNumber(book.minutes)} دقائق</span>
         </span>
@@ -1021,7 +1017,7 @@ function renderDetails() {
         <div>
           <p class="eyebrow">${state.book.level}</p>
           <h1>${state.book.title}</h1>
-          <p class="lead">${state.book.practiceOnly ? "نتدرّب على الحروف معًا، بدون درجات." : t("welcome.02")}</p>
+          <p class="lead">${state.book.id === "baa" ? "نتدرّب على الكلمات والحروف معًا." : t("welcome.02")}</p>
         </div>
       </section>
       <div class="controls">

@@ -372,9 +372,9 @@ button.category-item {
 .radio-rail::-webkit-scrollbar { display: none; }
 .radio-rail .media-card { scroll-snap-align: start; }
 
-/* The home shelf intentionally shows two stories first; the rest stay in the
-   same row and can be swiped horizontally without sending the child away. */
-.book-shelf--rail {
+/* Match the Radio Noory rail: two cards are visible and the remaining books
+   are reached by a smooth horizontal swipe. */
+.book-shelf--home {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: calc((100% - 14px) / 2);
@@ -382,22 +382,17 @@ button.category-item {
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   scroll-snap-type: inline mandatory;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(130, 46, 183, 0.45) transparent;
-  padding-bottom: 7px;
+  scrollbar-width: none;
+  align-items: start;
+  padding-bottom: 3px;
 }
 
-.book-shelf--rail .home-book-card {
+.book-shelf--home::-webkit-scrollbar {
+  display: none;
+}
+
+.book-shelf--home .home-book-card {
   scroll-snap-align: start;
-}
-
-.book-shelf--rail::-webkit-scrollbar {
-  height: 5px;
-}
-
-.book-shelf--rail::-webkit-scrollbar-thumb {
-  background: rgba(130, 46, 183, 0.45);
-  border-radius: 999px;
 }
 
 .media-card,
@@ -555,7 +550,55 @@ button.category-item {
 }
 
 .home-cover {
-  min-height: 196px;
+  min-height: 0;
+  block-size: 210px;
+  background: #ffffff;
+}
+
+.home-book-card .home-cover .cover-image {
+  object-fit: cover;
+  background: #ffffff;
+}
+
+/* Home book covers use the same clean supplied-art treatment as Radio Noory:
+   the asset itself is visible, without the legacy dark cover overlay. */
+.home-book-card .home-cover::before {
+  display: none;
+}
+
+.home-book-card {
+  grid-template-rows: 210px auto;
+  align-content: start;
+  gap: 8px;
+}
+
+/* Match the compact metadata treatment used by Noory Radio cards. */
+.home-book-card .home-book-meta {
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.home-book-card .soft-chip {
+  min-height: 27px;
+  padding: 4px 8px;
+  background: #f8edff;
+  color: #5d267e;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.home-book-card .noory-original {
+  min-width: 25px;
+}
+
+@media (max-width: 360px) {
+  .home-cover { block-size: 176px; }
+  .home-book-card { grid-template-rows: 176px auto; }
+  .home-book-card .soft-chip { padding-inline: 6px; font-size: 0.67rem; }
 }
 
 .details-cover {

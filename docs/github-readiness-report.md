@@ -11,7 +11,7 @@ The repository is safe to stage for GitHub: no child recordings, calibration aud
 ## Runtime review
 
 - Story and word evaluation remains isolated in `evaluateChildReading` / `evaluateReading`; tests cover exact reading, partial reading, empty transcript, retries, and teacher-score boundary behaviour.
-- The isolated-letter evaluator is separate and conservative. The uncalibrated letter book (`baa`) is visibly labelled non-scored practice. Its third unsuccessful attempt is `needs-practice`, `passed: false`, with continuation only.
+- The isolated-letter evaluator is separate and conservative. The `baa` book is fully available: word pages use normal reading-content evaluation, while only isolated short-vowel pages use the experimental flow. Their third unsuccessful attempt is `needs-practice`, `passed: false`, with continuation only.
 - `RecordingController` owns one microphone stream; `startRecording` guards against a second recorder and `stopRecording` uses a stop lock.
 - Narrator playback is a separate service. It receives the exact current-page URL only after a non-success result; it is not supplied to transcript alignment, scoring, glow, or rewards.
 - Interactive Nouri voice code and its unused prompt/TTS files were removed. `NOURI_ENABLED = false` remains documented as the deliberate deferred-scope flag; Noor stays only as on-screen guidance.
@@ -40,7 +40,7 @@ The Git candidate set contains the required runtime WebP/MP3 assets only. The 3 
 | Check | Result |
 | --- | --- |
 | `npm.cmd run check` | PASS |
-| `npm.cmd test` | PASS — 41 tests, 0 failures |
+| `npm.cmd test` | PASS — 47 tests, 0 failures |
 | `npm.cmd run build` | PASS — static POC syntax/build verification |
 | `npm.cmd start` README smoke test | PASS — `http://localhost:4173/` returned HTTP 200 |
 | `git diff --check` | PASS |
@@ -49,5 +49,5 @@ The Git candidate set contains the required runtime WebP/MP3 assets only. The 3 
 ## Remaining limitations
 
 - This is a browser-STT content-reading POC, not a validated Arabic pronunciation or fluency assessment.
-- Letter-sound vowel assessment remains experimental and is explicitly labelled non-scored practice.
+- Isolated letter-sound vowel assessment remains experimental; it never blocks book completion or awards an unverified success.
 - Manual Chrome/Edge microphone and mobile-viewport sign-off remains a release QA task; it is not a GitHub hygiene blocker.

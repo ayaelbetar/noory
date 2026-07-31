@@ -1,6 +1,6 @@
 # Final task-compliance audit
 
-Audit basis: source inspection and automated checks run on 2026-07-31. `PASS` means the requirement is supported by inspected code and/or the listed automated test. `NOT TESTED` means a real browser/device/manual check was not performed and is not claimed. The submitted catalog exposes **mosque** (10 pages), **girl** (28 pages), and **baa** (9 pages) as clearly labelled non-scored letter practice.
+Audit basis: source inspection and automated checks run on 2026-07-31. `PASS` means the requirement is supported by inspected code and/or the listed automated test. `NOT TESTED` means a real browser/device/manual check was not performed and is not claimed. The submitted catalog exposes **mosque** (10 pages), **girl** (28 pages), and **baa** (9 pages). In `baa`, word pages are scored normally; only isolated short-vowel pages use safe experimental practice.
 
 | Requirement | Implemented | Evidence | Test result | Blocking issue |
 | --- | --- | --- | --- | --- |
@@ -13,7 +13,7 @@ Audit basis: source inspection and automated checks run on 2026-07-31. `PASS` me
 | 7. Page-by-page continuation | Yes | `nextPage`, `movePage` | Code inspection: PASS | Manual E2E pending |
 | 8. Final reading score | Yes | `renderSummary`, `calculateFinalReadingScore` | `session-rewards`: PASS | Manual final screen pending |
 | Visible scope: every visible book works end-to-end | Code-supported | 3 visible books / 47 pages; all mapped assets present | Static asset audit: PASS | Manual E2E for all books pending |
-| Visible scope: experimental letters are explicit non-scored practice | Yes | `practiceOnly` card/details copy; safe evaluator fallback | Code inspection: PASS | None |
+| Visible scope: isolated letters are safe practice only | Yes | explicit `letter-sound` page type and safe evaluator fallback | Code inspection: PASS | None |
 | 9. Book selection loads | Yes | `renderCatalog` | NOT TESTED manually | Browser smoke pending |
 | 10. Select opens first page | Yes | `openDetails`, `startSession` resets index 0 | Code inspection: PASS | Browser smoke pending |
 | 11. Correct page image | Yes | `storyPage.imageUrl`, `renderSession` | 47 image/audio asset mappings: PASS | Visual verification pending |
@@ -62,12 +62,12 @@ Audit basis: source inspection and automated checks run on 2026-07-31. `PASS` me
 | 54. Auto-completion once | Yes | token and `autoCompleting` guard | `live-highlighting`: PASS | None |
 | 55. Partial cannot auto-complete | Yes | `allWordsConfirmed` check | `live-highlighting`: PASS | None |
 | 56. Manual End remains | Yes | recording control remains until stable completion | Code inspection: PASS | Browser test pending |
-| 57. Letter silence/noise cannot pass | Yes, experimental module | isolated evaluator requires speech | `reading-evaluation-service`: PASS | Clearly non-scored practice |
-| 58. Competing vowel cannot pass | Yes, experimental module | configured contrast classes | isolated evaluator tests: PASS | Clearly non-scored practice |
-| 59. Letter name cannot pass sound | Yes, experimental module | isolated evaluator class separation | `evaluator`: PASS | Clearly non-scored practice |
-| 60. Uncertain no letter glow | Yes | `renderTargetLetter` only confirmed success | isolated evaluator tests: PASS | Clearly non-scored practice |
-| 61. Third failure not pass | Yes | `needs-practice`, `passed:false` | isolated evaluator tests: PASS | Clearly non-scored practice |
-| 62. Third failure can continue | Yes | `canContinue` after third attempt | isolated evaluator tests: PASS | Clearly non-scored practice |
+| 57. Letter silence/noise cannot pass | Yes, experimental module | isolated evaluator requires speech | `reading-evaluation-service`: PASS | Isolated-letter practice only |
+| 58. Competing vowel cannot pass | Yes, experimental module | configured contrast classes | isolated evaluator tests: PASS | Isolated-letter practice only |
+| 59. Letter name cannot pass sound | Yes, experimental module | isolated evaluator class separation | `evaluator`: PASS | Isolated-letter practice only |
+| 60. Uncertain no letter glow | Yes | `renderTargetLetter` only confirmed success | isolated evaluator tests: PASS | Isolated-letter practice only |
+| 61. Third failure not pass | Yes | `needs-practice`, `passed:false` | isolated evaluator tests: PASS | Isolated-letter practice only |
+| 62. Third failure can continue | Yes | `canContinue` after third attempt | isolated evaluator tests: PASS | Isolated-letter practice only |
 | 63. Nouri voice button hidden | Yes | voice toggle removed; `NOURI_ENABLED=false` | Code inspection: PASS | Browser visual test pending |
 | 64. No Nouri audio requested/played | Yes | `NOURI_ENABLED=false`; no Nouri playback module or prompt asset is imported | Code inspection: PASS | Network/playback smoke pending |
 | 65. No Nouri unavailable error | Yes | no playback is invoked while disabled | Code inspection: PASS | Browser smoke pending |
@@ -88,5 +88,5 @@ Audit basis: source inspection and automated checks run on 2026-07-31. `PASS` me
 ## Scope and known audit limits
 
 - Visible books: **3**. Code and static-asset audit: **3/3** books, **47/47** pages with non-empty image and exact narrator audio mapping. No book was manually completed in Chrome or Edge during this audit.
-- `baa` is explicitly presented as non-scored practice because its letter-sound assessment is intentionally uncalibrated.
+- `baa` is fully available. Its word pages use normal reading-content evaluation; only isolated letter-sound pages use intentionally uncalibrated safe practice.
 - Interactive Nouri voice guidance was intentionally deferred from the submitted POC. Creating and reviewing a consistent child-friendly Arabic voice library, then testing its timing across all reading states, requires more time than the 3–6 hour POC scope. The submitted version uses clear on-screen guidance and the provided professional narrator audio after Try Again.

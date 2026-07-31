@@ -38,9 +38,8 @@ affect recording, evaluation, glow, attempts, or rewards.
   earn nothing.
 - Final reading score is separate: `successfulPages / totalBookPages`.
 
-Arabic clarification: كتاب حرف الباء متاح بالكامل، وتُقيَّم صفحات الكلمات
-بشكل طبيعي. تستخدم صفحات نطق الحرف المنفرد بالحركات وضعًا تدريبيًا تجريبيًا
-وآمنًا عند تعذّر التأكد من النطق.
+كتاب حرف الباء متاح بالكامل، وتُقيَّم صفحات الكلمات بشكل طبيعي. تستخدم صفحات
+نطق الحرف المنفرد بالحركات وضعًا تدريبيًا تجريبيًا وآمنًا عند تعذّر التأكد من النطق.
 
 ## Run locally
 

@@ -9,6 +9,8 @@
 
 Interactive Nouri voice guidance is an optional future enhancement and was intentionally disabled in the submitted POC. Producing an accurate, child-friendly Arabic voice experience requires additional voice preparation, pronunciation review, timing validation, development time and operating cost. The current POC therefore uses clear on-screen guidance and the provided professional narrator audio after Try Again.
 
+كتاب **حرف الباء** متاح بالكامل: صفحات الكلمات فيه تستخدم تقييم محتوى القراءة المعتاد وتُحتسب عند النجاح. أمّا صفحات بَ/بِ/بُ المنفردة فقط فتستخدم وضع تدريب صوتي تجريبي آمن؛ لا يمنح نجاحًا غير مؤكد، ولا يمنع الطفل من إكمال الكتاب بعد المحاولة الثالثة.
+
 المتضمن: اختيار كتب مناسب للموبايل، قراءة صفحة بصفحة، تسجيل ميكروفون الطفل، تغذية راجعة نجاح/حاول مرة أخرى، تشغيل الراوي المهني تلقائيًا بعد المحاولة غير الناجحة، نتيجة نهائية، وحالة آمنة للنص غير الواضح. يوجد توهج كلمات محايد وإكمال تلقائي فقط عندما تكون الكلمات النهائية مؤكدة؛ ولا يحل أي منهما محل النتيجة النهائية.
 
 المؤجل: صوت نور التفاعلي، تقييم النطق والطلاقة بمستوى المعلم، تقييم الحركات والفونيمات الجاهز للإنتاج، تدريب نموذج على المجموعة الكاملة، والكتب/الأنشطة غير المستقرة. قُيِّد النطاق عمدًا لتسليم POC قابل للاستخدام خلال ٣–٦ ساعات. يستخدم الإصدار إرشادًا مكتوبًا وصوت الراوي المهني فقط بعد Try Again.
