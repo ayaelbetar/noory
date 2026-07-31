@@ -45,17 +45,30 @@ affect recording, evaluation, glow, attempts, or rewards.
 كتاب حرف الباء متاح بالكامل، وتُقيَّم صفحات الكلمات بشكل طبيعي. تستخدم صفحات
 نطق الحرف المنفرد بالحركات وضعًا تدريبيًا تجريبيًا وآمنًا عند تعذّر التأكد من النطق.
 
-## Run locally
+## Local development
 
-Requirements: Node.js 18+ and a modern Chrome or Microsoft Edge browser.
-Microphone capture requires `localhost` or HTTPS.
+Requirements: Node.js 18+ and a current Chrome or Microsoft Edge browser.
+
+### Installation
 
 ```powershell
 npm.cmd ci
+```
+
+### Start command
+
+```powershell
 npm.cmd start
 ```
 
-Open `http://localhost:4173` and grant microphone permission when requested.
+### Local development URL
+
+`http://localhost:4173`
+
+This is a local development address, not a public hosted demo link. Microphone
+capture requires this `localhost` address (or HTTPS) and the child's browser
+must be granted microphone permission when prompted. Supported local browsers:
+current Chrome and Microsoft Edge.
 
 ## Checks
 
