@@ -46,6 +46,13 @@ The Git candidate set contains the required runtime WebP/MP3 assets only. The 3 
 | `git diff --check` | PASS |
 | Visible-book asset audit | PASS — 3 books, 47 pages, 0 missing assets |
 
+### Test-count reconciliation
+
+Earlier working notes recorded 42 tests before the removed Nouri voice-feedback
+test was deleted, then 41 tests after that removal. The current suite contains
+47 tests because `tests/books.test.js` adds six Baa-book configuration and
+safe-practice checks. The current command in `package.json` is authoritative.
+
 ## Remaining limitations
 
 - This is a browser-STT content-reading POC, not a validated Arabic pronunciation or fluency assessment.

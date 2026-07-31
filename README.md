@@ -39,6 +39,8 @@ affect recording, evaluation, glow, attempts, or rewards.
   Narrator playback, retries, skips, uncertain results, and `needs-practice`
   earn nothing.
 - Final reading score is separate: `successfulPages / totalBookPages`.
+  Therefore an unverified isolated-letter page remains in the book's total-page
+  denominator but contributes no successful page to the numerator.
 
 كتاب حرف الباء متاح بالكامل، وتُقيَّم صفحات الكلمات بشكل طبيعي. تستخدم صفحات
 نطق الحرف المنفرد بالحركات وضعًا تدريبيًا تجريبيًا وآمنًا عند تعذّر التأكد من النطق.
