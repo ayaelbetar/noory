@@ -11,7 +11,8 @@
   --blue: #2762a4;
   --line: #e7dfd2;
   --shadow: 0 16px 36px rgba(36, 48, 52, 0.14);
-  --font: "Segoe UI", Tahoma, Arial, sans-serif;
+  /* One Arabic-friendly UI family across every screen and component. */
+  --font: Tahoma, sans-serif;
 }
 
 * {
