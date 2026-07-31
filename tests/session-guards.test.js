@@ -27,8 +27,9 @@ describe("reading session edge-case guards", () => {
   it("maps technical failures to child-safe message families", () => {
     assert.equal(failureMessageKey("NETWORK_ERROR"), "network.01");
     assert.equal(failureMessageKey("AI_TIMEOUT"), "network.02");
-    assert.equal(failureMessageKey("LOW_CONFIDENCE"), "retry.02");
-    assert.equal(failureMessageKey("EMPTY_AUDIO"), "retry.01");
+    assert.equal(failureMessageKey("LOW_CONFIDENCE"), "stt.unreliable");
+    assert.equal(failureMessageKey("EMPTY_AUDIO"), "stt.unreliable");
+    assert.equal(failureMessageKey("UNCERTAIN"), "stt.unreliable");
   });
 
   it("rejects missing page text before a recording can be evaluated", () => {

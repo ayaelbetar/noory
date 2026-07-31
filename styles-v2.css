@@ -165,9 +165,21 @@ button.category-item {
 }
 
 .category-cover img {
-  width: 114%;
-  height: 114%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+}
+
+.category-cover.prophet img {
+  object-position: center 24%;
+}
+
+.category-cover.safe img {
+  object-position: center 28%;
+}
+
+.category-cover.reviewed img {
+  object-position: center 25%;
 }
 
 .read-noor-feature {
@@ -321,6 +333,11 @@ button.category-item {
   gap: 12px;
 }
 
+.section-head h2.section-title--compact {
+  font-size: 1.28rem;
+  line-height: 1.2;
+}
+
 .text-link {
   min-height: 36px;
   padding: 0;
@@ -337,6 +354,50 @@ button.category-item {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+/* Keep two radio cards visible; swipe sideways for the remaining programmes. */
+.radio-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 14px) / 2);
+  grid-template-columns: none;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: none;
+  padding-bottom: 3px;
+}
+
+.radio-rail::-webkit-scrollbar { display: none; }
+.radio-rail .media-card { scroll-snap-align: start; }
+
+/* The home shelf intentionally shows two stories first; the rest stay in the
+   same row and can be swiped horizontally without sending the child away. */
+.book-shelf--rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 14px) / 2);
+  grid-template-columns: none;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(130, 46, 183, 0.45) transparent;
+  padding-bottom: 7px;
+}
+
+.book-shelf--rail .home-book-card {
+  scroll-snap-align: start;
+}
+
+.book-shelf--rail::-webkit-scrollbar {
+  height: 5px;
+}
+
+.book-shelf--rail::-webkit-scrollbar-thumb {
+  background: rgba(130, 46, 183, 0.45);
+  border-radius: 999px;
 }
 
 .media-card,
@@ -402,6 +463,28 @@ button.category-item {
     linear-gradient(135deg, #101f62, #1962bc 52%, #e83f93);
 }
 
+/* Original Noory Radio covers supplied for the home feed.  The cover itself
+   contains the programme title, so no duplicate overlay copy is added. */
+.radio-art--cover {
+  display: block;
+  min-height: 210px;
+  padding: 0;
+  background: #ece2f4;
+}
+
+.radio-art--cover::before {
+  display: none;
+}
+
+.radio-art--cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 210px;
+  object-fit: cover;
+  object-position: center;
+}
+
 .chip-row,
 .badge-row {
   display: flex;
@@ -420,6 +503,42 @@ button.category-item {
   color: var(--purple);
   font-weight: 900;
   font-size: 0.82rem;
+}
+
+/* Metadata follows the Noory Discover cards: age and book count are small
+   soft pills, while original Noory works use the compact crown signature. */
+.media-card .chip-row {
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 6px 8px;
+}
+
+.media-card .soft-chip {
+  min-height: 27px;
+  padding: 4px 8px;
+  background: #f8edff;
+  color: #5d267e;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.noory-original {
+  display: inline-grid;
+  justify-items: center;
+  gap: 0;
+  min-width: 25px;
+  color: #7a2a91;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 0.85;
+}
+
+.noory-original > span {
+  color: #a42a8d;
+  font-size: 0.88rem;
+  line-height: 0.8;
 }
 
 .home-book-title,
@@ -674,6 +793,119 @@ body {
 
 .session-screen .page-shell {
   padding-bottom: 20px;
+}
+
+/* Mobile reading hierarchy: page, sound, Noor, one current action, navigation. */
+.session-screen {
+  min-height: auto;
+  padding-inline: max(20px, 5vw);
+  padding-bottom: 28px;
+}
+
+.session-screen .page-shell {
+  gap: 20px;
+}
+
+.session-screen .page-scene {
+  border: 1px solid rgba(90, 54, 133, 0.1);
+  border-radius: 12px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.session-screen .page-scene::before,
+.session-screen .page-scene::after {
+  display: none;
+}
+
+.session-screen .book-page-image {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  max-block-size: none;
+  object-fit: contain;
+  object-position: center top;
+  border-radius: inherit;
+}
+
+.target-letter {
+  gap: 4px;
+}
+
+.target-letter span {
+  font-size: 0.9rem;
+}
+
+.session-screen .noor-row,
+.session-screen.phase-recording .noor-row,
+.session-screen.phase-processing .noor-row,
+.session-screen.phase-narrator .noor-row,
+.session-screen.phase-retry .noor-row,
+.session-screen.phase-continue .noor-row {
+  gap: 12px;
+  margin: 0;
+}
+
+.session-noori {
+  inline-size: clamp(82px, 25vw, 112px);
+  block-size: clamp(82px, 25vw, 112px);
+}
+
+.session-screen .noor-bubble {
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 0.94rem;
+  line-height: 1.35;
+  box-shadow: none;
+}
+
+.session-screen .noor-bubble::before {
+  inline-size: 10px;
+  block-size: 10px;
+  inset-inline-start: -6px;
+}
+
+.session-screen #phase-controls-container,
+.session-screen #phase-controls-container > .controls {
+  margin-top: 20px;
+}
+
+.session-screen .controls {
+  gap: 12px;
+}
+
+.session-screen .primary-button {
+  min-height: 52px;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+.session-screen .page-navigation {
+  gap: 8px;
+  margin-top: 0;
+}
+
+.session-screen .page-navigation .secondary-button {
+  min-height: 38px;
+  padding: 7px 11px;
+  border-color: rgba(90, 54, 133, 0.18);
+  border-radius: 11px;
+  background: transparent;
+  box-shadow: none;
+  color: #5a3485;
+  font-size: 0.82rem;
+}
+
+.session-screen .page-navigation .secondary-button:disabled {
+  opacity: 0.35;
+}
+
+.session-screen .activity-steps,
+.session-screen .narrator-action,
+.session-screen .thinking-dots,
+.session-screen .meter,
+.session-screen .processing-copy {
+  display: none;
 }
 
 .session-screen .page-text.page-text-illustrated {
@@ -1157,9 +1389,29 @@ body {
 }
 
 .reading-word.is-read {
-  color: #fff9ad;
-  text-shadow: 0 0 12px #ffd84d, 2px 2px 0 #21113b;
-  transform: translateY(-2px);
+  color: inherit;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.75), 0 0 8px rgba(255, 255, 255, 0.45);
+  transform: none;
+}
+
+/* Live states are driven only by the child's speech-recognition transcript. */
+.reading-word--partial .reading-letter--matched,
+.reading-word--correct {
+  color: inherit;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.75), 0 0 8px rgba(255, 255, 255, 0.45);
+}
+
+.reading-word--partial .reading-letter--matched {
+  border-bottom: 0;
+}
+
+.reading-word--uncertain {
+  color: inherit;
+  text-decoration: none;
+}
+
+.reading-word--incorrect {
+  color: inherit;
 }
 
 .page-reward {
@@ -1557,6 +1809,39 @@ body {
   font-weight: 800;
 }
 
+/* Nouri's interactive audio is intentionally deferred for this POC. Keep the
+   parent-consent setting visible while removing the unavailable voice switch. */
+.voice-feedback-setting:not(.consent-setting) {
+  display: none;
+}
+
+.recording-playback-loading,
+.recording-playback-error {
+  margin: 10px 0;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #5b317e;
+}
+
+.recording-playback-loading span {
+  display: inline-block;
+  inline-size: 0.8rem;
+  block-size: 0.8rem;
+  margin-inline-end: 0.4rem;
+  border: 2px solid rgba(91, 49, 126, 0.22);
+  border-top-color: #9d31bd;
+  border-radius: 50%;
+  animation: recording-playback-spin 700ms linear infinite;
+  vertical-align: -0.1rem;
+}
+
+.recording-playback-error { color: #7a3d48; }
+
+@keyframes recording-playback-spin {
+  to { transform: rotate(360deg); }
+}
+
 .voice-feedback-setting input {
   inline-size: 20px;
   block-size: 20px;
@@ -1733,6 +2018,283 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Catalogue covers are source book pages with useful edge content. Show the
+   whole cover rather than cropping it to fill the compact list thumbnail. */
+.story-list-card .list-cover .cover-image {
+  object-fit: contain;
+  inset: 24px;
+  width: auto;
+  height: auto;
+  padding: 0;
+  box-sizing: border-box;
+  background: #ffffff;
+}
+
+.session-screen .page-scene {
+  display: block;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.book-page-image {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: clamp(255px, 39vh, 330px);
+  object-fit: contain;
+  object-position: center;
+  background: #ffffff;
+}
+
+.page-navigation {
+  display: flex;
+  inline-size: min(100%, 460px);
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.page-navigation .secondary-button {
+  flex: 1;
+}
+
+/* Compact child-reading layout: one complete page, then guidance and actions. */
+.session-screen {
+  gap: 0;
+  padding-inline: clamp(12px, 4vw, 28px);
+  padding-bottom: 24px;
+}
+
+.session-screen .topbar {
+  margin-bottom: 2px;
+}
+
+.session-page-meta {
+  margin: 0 8px 8px;
+  color: #74578f;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.session-screen .progress-track {
+  margin-bottom: 12px;
+}
+
+.session-screen .page-shell {
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.session-screen .page-scene {
+  display: flex;
+  min-height: 0;
+  border: 1px solid rgba(90, 54, 133, 0.14);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(67, 39, 100, 0.1);
+}
+
+.session-screen .book-page-image {
+  inline-size: 100%;
+  block-size: auto;
+  min-block-size: 0;
+  max-block-size: min(56vh, 620px);
+  object-fit: contain;
+  object-position: center;
+  border-radius: inherit;
+}
+
+.session-screen .page-reading-text {
+  width: 100%;
+  margin: 0;
+  padding: 0 4px;
+  color: #332145;
+  font-size: clamp(1.35rem, 6vw, 2rem);
+  line-height: 1.55;
+  text-align: center;
+  text-shadow: none;
+}
+
+.target-letter-slot:empty {
+  display: none;
+}
+
+.target-letter {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  margin: 0;
+  color: #5a3485;
+}
+
+.target-letter span {
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.target-letter strong {
+  font-family: "Noto Naskh Arabic", serif;
+  font-size: clamp(2.5rem, 12vw, 4rem);
+  line-height: 1.15;
+}
+
+.target-letter.is-heard {
+  color: #5a3485;
+}
+
+.target-letter.is-heard strong {
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.75), 0 0 9px rgba(255, 255, 255, 0.48);
+}
+
+.session-screen .noor-row {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 16px 0;
+  padding: 0;
+}
+
+.session-noori {
+  flex: 0 0 auto;
+  inline-size: clamp(112px, 34vw, 154px);
+  block-size: clamp(112px, 34vw, 154px);
+  object-fit: contain;
+  transform: scaleX(-1);
+}
+
+.session-screen .noor-bubble {
+  position: relative;
+  width: auto;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(105, 69, 151, 0.18);
+  border-radius: 18px;
+  background: #fff;
+  color: #4b2879;
+  font-size: 1rem;
+  line-height: 1.5;
+  box-shadow: 0 6px 16px rgba(67, 39, 100, 0.09);
+}
+
+.session-screen .noor-bubble::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -8px;
+  top: 50%;
+  inline-size: 15px;
+  block-size: 15px;
+  background: #fff;
+  border-inline-start: 1px solid rgba(105, 69, 151, 0.18);
+  border-block-end: 1px solid rgba(105, 69, 151, 0.18);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.session-screen .controls {
+  gap: 12px;
+  margin: 0;
+}
+
+.session-screen .primary-button,
+.session-screen .secondary-button {
+  min-height: 48px;
+}
+
+.activity-steps {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  color: #67438e;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.activity-steps span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.activity-steps b {
+  display: grid;
+  place-items: center;
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: 50%;
+  background: #eadcf8;
+}
+
+.narrator-action {
+  min-height: 48px;
+}
+
+.recording-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.recording-action small {
+  font-variant-numeric: tabular-nums;
+}
+
+.microphone-pulse {
+  animation: microphone-listening 1.3s ease-in-out infinite;
+}
+
+@keyframes microphone-listening {
+  50% { transform: scale(1.18); filter: brightness(1.2); }
+}
+
+.session-screen .page-navigation {
+  gap: 12px;
+}
+
+.session-screen .page-navigation .secondary-button {
+  min-height: 48px;
+  padding-inline: 10px;
+  font-size: 0.9rem;
+}
+
+.session-screen .page-navigation .secondary-button:first-child::before { content: "› "; }
+.session-screen .page-navigation .secondary-button:last-child::after { content: " ‹"; }
+
+.session-screen .secondary-button:disabled {
+  opacity: 0.46;
+  color: #8e7ca3;
+}
+
+.session-screen .reading-word--partial .reading-letter--matched,
+.session-screen .reading-word--uncertain {
+  color: #9a6ec0;
+  text-shadow: none;
+}
+
+.session-screen .reading-word--correct {
+  color: #36966d;
+  text-shadow: none;
+}
+
+.session-screen .reading-word--incorrect {
+  color: #ca8753;
+}
+
+@media (min-width: 700px) {
+  .session-screen { max-width: 760px; margin-inline: auto; }
+  .session-screen .book-page-image { max-block-size: 58vh; }
+  .session-screen .noor-row { max-width: 620px; margin-inline: auto; }
 }
 
 .cover::after {
@@ -2889,4 +3451,488 @@ body {
 .session-screen #phase-controls-container > .controls {
   width: 100%;
   margin-top: 0;
+}
+
+/* Final compact reading-screen precedence. */
+.session-screen {
+  min-height: 0;
+  padding-inline: clamp(12px, 4vw, 28px);
+  padding-bottom: 24px;
+  overflow-x: hidden;
+}
+
+.session-screen .page-shell {
+  display: grid;
+  gap: 10px;
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.session-screen .page-scene {
+  display: flex;
+  min-height: 0;
+  border: 1px solid rgba(90, 54, 133, 0.14);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(67, 39, 100, 0.1);
+}
+
+.session-screen .book-page-image {
+  inline-size: 100%;
+  block-size: auto;
+  min-block-size: 0;
+  max-block-size: min(56vh, 620px);
+  object-fit: contain;
+  object-position: center;
+  border-radius: inherit;
+}
+
+.session-screen .page-reading-text {
+  width: 100%;
+  margin: 0;
+  padding: 0 4px;
+  color: #332145;
+  font-size: clamp(1.35rem, 6vw, 2rem);
+  line-height: 1.55;
+  text-align: center;
+  text-shadow: none;
+}
+
+.session-screen .noor-row,
+.session-screen.phase-recording .noor-row,
+.session-screen.phase-processing .noor-row,
+.session-screen.phase-narrator .noor-row,
+.session-screen.phase-retry .noor-row,
+.session-screen.phase-continue .noor-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: none;
+  margin: 16px 0;
+}
+
+.session-noori {
+  flex: 0 0 auto;
+  inline-size: clamp(112px, 34vw, 154px);
+  block-size: clamp(112px, 34vw, 154px);
+  object-fit: contain;
+  transform: scaleX(-1);
+}
+
+.session-screen .noor-bubble {
+  position: relative;
+  width: auto;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(105, 69, 151, 0.18);
+  border-radius: 18px;
+  background: #fff;
+  color: #4b2879;
+  font-size: 1rem;
+  line-height: 1.5;
+  box-shadow: 0 6px 16px rgba(67, 39, 100, 0.09);
+}
+
+.session-screen .noor-bubble::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -8px;
+  top: 50%;
+  inline-size: 15px;
+  block-size: 15px;
+  background: #fff;
+  border-inline-start: 1px solid rgba(105, 69, 151, 0.18);
+  border-block-end: 1px solid rgba(105, 69, 151, 0.18);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.session-screen .controls { gap: 12px; }
+.session-screen .primary-button,
+.session-screen .secondary-button { min-height: 48px; }
+
+/* Reading recognition uses light only: it never changes the page text's
+   original colour or adds a coloured word background. */
+.session-screen .page-reading-text .reading-word,
+.session-screen .page-reading-text .reading-word.is-read,
+.session-screen .reading-word--partial .reading-letter--matched,
+.session-screen .reading-word--uncertain,
+.session-screen .reading-word--correct,
+.session-screen .reading-word--incorrect {
+  color: inherit;
+  background: transparent;
+  border-color: transparent;
+  border-bottom-width: 0;
+  text-decoration: none;
+}
+
+.session-screen .page-reading-text .reading-word {
+  display: inline-block;
+  padding-inline: 0.08em;
+  opacity: 1;
+  font-weight: inherit;
+  transition: text-shadow 180ms ease, filter 180ms ease, transform 180ms ease, opacity 180ms ease;
+  will-change: text-shadow, filter, transform;
+}
+
+/* Interim child-microphone alignment only. */
+.session-screen .reading-word--partial,
+.session-screen .reading-word--uncertain {
+  filter: brightness(1.12);
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.9), 0 0 10px rgba(255, 255, 255, 0.62);
+  transform: scale(1.03);
+  animation: reading-word-pulse 900ms ease-in-out infinite alternate;
+}
+
+/* Final child-recognition confirmation leaves a calm, neutral glow. */
+.session-screen .reading-word--correct,
+.session-screen .page-reading-text .reading-word.is-read {
+  filter: brightness(1.06);
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.75), 0 0 8px rgba(255, 255, 255, 0.45);
+  transform: none;
+}
+
+.session-screen .reading-word--incorrect { filter: none; text-shadow: none; }
+
+/* The isolated بَ target follows the same neutral confirmed glow. */
+.target-letter.is-heard,
+.target-letter.is-heard strong {
+  color: #5a3485;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.75), 0 0 9px rgba(255, 255, 255, 0.48);
+}
+
+@keyframes reading-word-pulse {
+  from { filter: brightness(1.06); }
+  to { filter: brightness(1.2); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-screen .reading-word--partial,
+  .session-screen .reading-word--uncertain {
+    animation: none;
+    transform: none;
+  }
+}
+
+@media (min-width: 700px) {
+  .session-screen { max-width: 760px; margin-inline: auto; }
+  .session-screen .book-page-image { max-block-size: 58vh; }
+}
+
+/* Final mobile simplification precedence. */
+.session-screen { min-height: auto; padding-inline: max(20px, 5vw); padding-bottom: 28px; }
+.session-screen .page-shell { gap: 20px; }
+.session-screen .page-scene { border: 1px solid rgba(90, 54, 133, 0.1); border-radius: 12px; background: transparent; box-shadow: none; }
+.session-screen .page-scene::before,
+.session-screen .page-scene::after { display: none; }
+.session-screen .book-page-image { display: block; inline-size: 100%; block-size: auto; max-block-size: none; object-fit: contain; object-position: center top; border-radius: inherit; }
+.target-letter { gap: 4px; }
+.target-letter span { font-size: 0.9rem; }
+.session-screen .noor-row,
+.session-screen.phase-recording .noor-row,
+.session-screen.phase-processing .noor-row,
+.session-screen.phase-narrator .noor-row,
+.session-screen.phase-retry .noor-row,
+.session-screen.phase-continue .noor-row { gap: 12px; margin: 0; }
+.session-noori { inline-size: clamp(82px, 25vw, 112px); block-size: clamp(82px, 25vw, 112px); }
+.session-screen .noor-bubble { padding: 10px 12px; border-radius: 12px; font-size: 0.94rem; line-height: 1.35; box-shadow: none; }
+.session-screen .noor-bubble::before { inline-size: 10px; block-size: 10px; inset-inline-start: -6px; }
+.session-screen #phase-controls-container,
+.session-screen #phase-controls-container > .controls { margin-top: 20px; }
+.session-screen .controls { gap: 12px; }
+.session-screen .primary-button { min-height: 52px; border-radius: 14px; box-shadow: none; }
+.session-screen .page-navigation { gap: 8px; margin-top: 0; }
+.session-screen .page-navigation .secondary-button { min-height: 38px; padding: 7px 11px; border-color: rgba(90, 54, 133, 0.18); border-radius: 11px; background: transparent; box-shadow: none; color: #5a3485; font-size: 0.82rem; }
+.session-screen .page-navigation .secondary-button:disabled { opacity: 0.35; }
+.session-screen .activity-steps,
+.session-screen .narrator-action,
+.session-screen .thinking-dots,
+.session-screen .meter,
+.session-screen .processing-copy { display: none; }
+
+/* Keep the child-reading signal visible on the light page background. The
+   glyph colour remains inherited; only a soft neutral halo is added. */
+.session-screen .page-reading-text .reading-word--partial,
+.session-screen .page-reading-text .reading-word--uncertain {
+  filter: brightness(1.14) drop-shadow(0 0 5px rgba(122, 94, 164, 0.52));
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.98),
+    0 0 7px rgba(122, 94, 164, 0.72),
+    0 0 14px rgba(122, 94, 164, 0.34);
+}
+
+.session-screen .page-reading-text .reading-word--correct,
+.session-screen .page-reading-text .reading-word.is-read {
+  filter: brightness(1.08) drop-shadow(0 0 3px rgba(122, 94, 164, 0.42));
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.92),
+    0 0 6px rgba(122, 94, 164, 0.58),
+    0 0 11px rgba(122, 94, 164, 0.25);
+}
+
+/* A gold light signals child-recognised reading while preserving each
+   word's original ink colour and layout. */
+.session-screen .page-reading-text .reading-word--partial,
+.session-screen .page-reading-text .reading-word--uncertain {
+  filter: brightness(1.16) drop-shadow(0 0 6px rgba(236, 181, 47, 0.72));
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.98),
+    0 0 7px rgba(255, 211, 91, 0.9),
+    0 0 16px rgba(225, 158, 26, 0.56);
+}
+
+.session-screen .page-reading-text .reading-word--correct,
+.session-screen .page-reading-text .reading-word.is-read {
+  filter: brightness(1.1) drop-shadow(0 0 4px rgba(236, 181, 47, 0.58));
+  text-shadow:
+    0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 6px rgba(255, 211, 91, 0.78),
+    0 0 12px rgba(225, 158, 26, 0.4);
+}
+
+/* Noor stays in the same place in every recording state and is itself a
+   large, simple record/stop target. */
+.session-screen .session-noori-button {
+  flex: 0 0 auto;
+  inline-size: clamp(82px, 25vw, 112px);
+  block-size: clamp(82px, 25vw, 112px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.session-screen .session-noori-button .session-noori {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.session-screen .session-noori-button:not(:disabled):focus-visible {
+  outline: 3px solid rgba(230, 52, 147, 0.56);
+  outline-offset: 4px;
+}
+
+.session-screen .session-noori-button.is-recording .session-noori {
+  filter: drop-shadow(0 0 8px rgba(230, 52, 147, 0.55));
+}
+
+.session-screen .session-noori-button:disabled {
+  cursor: default;
+}
+
+/* The record CTA keeps its exact full-width position; navigation remains on a
+   separate row below it instead of squeezing the stop icon beside the arrows. */
+.session-screen .controls.recording-controls {
+  display: grid;
+  inline-size: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: stretch;
+}
+
+.session-screen .controls.recording-controls .recording-action,
+.session-screen .controls.recording-controls .page-navigation {
+  inline-size: 100%;
+}
+
+/* Airy catalog introduction: a smaller pink cue and a calmer two-line title. */
+.catalog-screen .catalog-intro-kicker {
+  margin: 0 0 12px;
+  color: #e84b9a;
+  font-size: 0.9rem;
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.catalog-screen .catalog-intro-title {
+  margin: 0;
+  color: #4a2879;
+  font-size: clamp(1.2rem, 5vw, 1.52rem);
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.catalog-screen .catalog-intro-title .noor-word {
+  font-weight: 950;
+}
+
+.session-screen .download-recording-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 40px;
+  margin-top: 10px;
+  text-decoration: none;
+}
+
+/* Shared reading-page shell. These final rules intentionally override older
+   state/page-specific sizing so source-page aspect ratios never move the rest
+   of the reading flow. */
+.app-shell:has(.reading-app) {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  margin-inline: auto;
+  overflow-x: hidden;
+}
+
+.reading-app {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  margin-inline: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.reading-page {
+  padding-inline: clamp(16px, 5vw, 32px);
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.reading-page .page-shell {
+  display: grid;
+  grid-template-rows: auto minmax(72px, auto) auto;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.reading-page .page-scene,
+.reading-page .book-media-stage {
+  width: min(100%, 344px);
+  height: clamp(260px, 34dvh, 330px);
+  min-height: 0;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.reading-page .book-page-image,
+.reading-page .page-scene img,
+.reading-page .page-scene canvas {
+  width: 100%;
+  height: 100%;
+  max-block-size: none;
+  object-fit: contain;
+  object-position: center;
+  border-radius: inherit;
+}
+
+.reading-page .expected-reading-text {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.reading-page .target-letter-slot,
+.reading-page .page-reading-text {
+  width: min(100%, 460px);
+  margin: 0;
+  text-align: center;
+}
+
+.reading-page .page-reading-text:empty,
+.reading-page .target-letter-slot:empty {
+  display: none;
+}
+
+.reading-page .noor-row {
+  width: 100%;
+  min-height: 112px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.reading-page #phase-controls-container,
+.reading-page #phase-controls-container > .controls,
+.reading-page .reading-actions {
+  width: 100%;
+  max-width: 344px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.reading-page .page-navigation {
+  width: 100%;
+  margin: 0;
+  gap: 8px;
+}
+
+.reading-page .page-navigation .secondary-button,
+.reading-page .primary-button {
+  box-sizing: border-box;
+}
+
+/* Reading and book-detail screens share the same top navigation treatment. */
+.reading-page .topbar-back {
+  inline-size: 50px;
+  block-size: 50px;
+  background: #ffffff;
+  border: 0;
+  border-radius: 999px;
+  color: #4a2879;
+  box-shadow: 0 10px 22px rgba(85, 47, 132, 0.14);
+}
+
+@media (max-width: 340px) {
+  .reading-page .noor-row {
+    min-height: 112px;
+  }
+
+  .reading-page .noor-bubble {
+    max-width: calc(100% - 94px);
+  }
+}
+
+/* One calm lavender paper background across the reading experience. */
+body {
+  background: linear-gradient(180deg, #f7f1ff 0%, #eee7fb 52%, #f9f5ff 100%);
+}
+
+.app-shell {
+  background: #f7f2ff;
+}
+
+.storybook-screen,
+.discover-screen,
+.reading-page {
+  background:
+    radial-gradient(ellipse at 4% 76%, rgba(213, 198, 244, 0.34) 0 13%, transparent 13.4%),
+    radial-gradient(ellipse at 96% 68%, rgba(232, 220, 250, 0.42) 0 12%, transparent 12.4%),
+    linear-gradient(180deg, #fbf8ff 0%, #f5f0fc 54%, #eee7f8 100%);
 }

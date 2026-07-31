@@ -1,160 +1,115 @@
-# Noory — نوري
+# اقرأ مع نور — Noory Reading POC
 
-## Read with Noor — اقرأ مع نور
+Mobile-friendly Arabic reading practice for children. A child opens a book,
+records a page, receives supportive content-reading feedback, and hears the
+professional narrator for that exact page after **Try Again**.
 
-Browser proof of concept for Arabic, RTL reading practice for children aged 3–8. A child reads a story page aloud, receives Success or Retry, hears the exact page narrated after Retry, and finishes with a book-level reading summary.
+## Included books
 
-## Overview
+- **حرف الباء** — 9 active pages. The book is fully available: its word pages
+  use normal reading-content evaluation and are rewarded on confirmed success.
+  Only isolated **بَ / بِ / بُ** pages use safe experimental letter practice.
+- **ماذا يوجد في المسجد؟** — 10 reading pages.
+- **الطفلة التي لم تتوقف عن البكاء** — 28 reading pages.
 
-**Noory — نوري** is the main application. **Read with Noor — اقرأ مع نور** is an interactive reading feature inside Noory, helping children read and understand with **Noor — نور** as their reading companion.
+The active catalog has 3 books and 47 pages. All active pages use local,
+repository-relative images and professional narrator audio.
 
-اقرأ مع نور هي ميزة قراءة تفاعلية داخل تطبيق نوري، تساعد الأطفال على القراءة والفهم بمرافقة شخصية نور.
+## Child flow
 
-Read with Noor makes read-aloud practice supportive rather than exam-like. Noor encourages the child, while narrator help appears only after a genuine Retry. The POC uses browser recording and local Arabic text comparison; it does not connect to a hosted AI evaluation service.
+1. Select a book and open its first page.
+2. Read the displayed text and record using the microphone.
+3. Receive Success or Try Again from the reading-content evaluator.
+4. After Try Again, hear the professional narrator audio for that exact page.
+5. Retry, continue page by page, and reach a final score.
 
-## Demo
+Confirmed words can glow while reading. Narrator playback and Nouri do not
+affect recording, evaluation, glow, attempts, or rewards.
 
-No hosted demo URL is currently configured. Run locally with the commands below. The repository includes all POC images, story covers, and page illustrations. Professional narrator audio is not included, so the narrator falls back to browser Arabic speech synthesis.
+## Evaluation and rewards
 
-## Core Features
+- Story, sentence, and word pages use browser Arabic STT plus normalized text
+  alignment for experimental reading-content feedback.
+- Isolated short-vowel letter pages use a separate conservative evaluator.
+  An unverified result never passes, glows, or earns a reward. After three
+  unsuccessful attempts the child can continue with `needs-practice`.
+- A unique successful page earns 1 star and 5 coins once per session.
+  Narrator playback, retries, skips, uncertain results, and `needs-practice`
+  earn nothing.
+- Final reading score is separate: `successfulPages / totalBookPages`.
 
-- Arabic RTL library, story details, reading session, and Reading Summary.
-- Meet Noor on every entry; optional first-visit child name and editable feature settings.
-- Optional Noor voice feedback; turning it off never disables narrator playback.
-- Browser microphone recording, audio-level indicator, and optional Arabic Web Speech transcript.
-- Local Arabic normalisation with a `0.70` Success/Retry threshold.
-- Exact-page narrator after Retry, Continue after three genuine Retry outcomes, and final score.
-- Parent-consent POC gate, local session resume, and technical failures that never increment Retry.
-- Client guards for offline recovery, duplicate actions, 120-second recording, 8 MB validation, and 40 evaluations per session.
+Arabic clarification: كتاب حرف الباء متاح بالكامل، وتُقيَّم صفحات الكلمات
+بشكل طبيعي. تستخدم صفحات نطق الحرف المنفرد بالحركات وضعًا تدريبيًا تجريبيًا
+وآمنًا عند تعذّر التأكد من النطق.
 
-## Child Flow
+## Run locally
+
+Requirements: Node.js 18+ and a modern Chrome or Microsoft Edge browser.
+Microphone capture requires `localhost` or HTTPS.
+
+```powershell
+npm.cmd ci
+npm.cmd start
+```
+
+Open `http://localhost:4173` and grant microphone permission when requested.
+
+## Checks
+
+```powershell
+npm.cmd run check
+npm.cmd test
+npm.cmd run build
+```
+
+`build` runs the static syntax check; this POC has no bundling step and no
+required environment variables or cloud credentials.
+
+## Nouri voice
+
+Interactive Nouri voice guidance is an optional future enhancement and was
+intentionally disabled in the submitted POC. Producing an accurate,
+child-friendly Arabic voice experience requires additional voice preparation,
+pronunciation review, timing validation, development time and operating cost.
+The current POC therefore uses clear on-screen guidance and the provided
+professional narrator audio after Try Again.
+
+`NOURI_ENABLED=false`. Nouri remains a visual product character only.
+
+## Validation evidence and limitations
+
+- The fixed pilot used 24 recordings; full-pipeline agreement was 50%.
+- The full 922 recordings were not processed through a final trained model.
+- Arabic browser STT is experimental and is not validated teacher-level
+  pronunciation or fluency assessment.
+- Isolated short-vowel assessment remains experimental and does not block
+  completion of a book.
+- Browser microphone, autoplay, and STT support vary by device; manual
+  Chrome/Edge and mobile-device acceptance checks remain separate QA work.
+
+## Privacy
+
+Recordings remain in the browser session and are not uploaded by this static
+POC. Child recordings, calibration data, evaluation audio, review notes,
+environment files, virtual environments, models, and `node_modules` are
+ignored by Git.
+
+## Repository layout
 
 ```text
-Home → Read with Noor → Meet Noor → Book Library → Story Details
-     → Parent consent → Read aloud → Record → Evaluate
-     → Success → Next Page
-     → Retry → Exact-page narrator → Record again
-     → Three Retry outcomes → Continue → Reading Summary
+assets/books/                 Active page images and narrator audio
+src/app-v2.js                 UI and session flow
+src/data/books.js             Explicit book/page manifest
+src/features/reading/         Evaluation, glow, guards, rewards
+src/features/recording/       Microphone lifecycle
+src/features/playback/        Professional narrator playback
+tests/                        Node automated tests
+docs/                         POC write-up and readiness reports
 ```
 
-## Product Decisions
+## Future improvements
 
-- The child tries before getting narrator help.
-- The child sees Success or encouraging Retry, never AI/HTTP/technical language.
-- Narrator is educational support and remains independent from **صوت نور**.
-- The child name is optional and used selectively.
-- Evaluation happens once after Done, which preserves focus and bounds future provider cost.
-
-## Tech Stack
-
-- Plain HTML, CSS, and JavaScript modules.
-- Node.js built-in HTTP server for local static serving.
-- Browser `MediaRecorder`, `getUserMedia`, Web Audio API, optional Web Speech recognition, and `speechSynthesis`.
-- Node.js built-in test runner (`node --test`).
-
-## Project Structure
-
-```text
-assets/                       Child-facing illustrations and story covers
-src/
-  app-v2.js                   Active application shell and session flow
-  core/messages.js            Arabic copy and interpolation helper
-  data/books.js               Demo story data
-  features/                   Recording, evaluation, audio, analytics, guards
-tests/                        Node unit tests
-archive/reviews/              Historical audits and meta reports (non-normative)
-Read_with_Noor_MVP_PRD.md     MVP requirements
-```
-
-## Getting Started
-
-Prerequisite: Node.js 18 or later.
-
-```bash
-git clone <repository-url>
-cd <project-directory>
-npm install
-npm start
-```
-
-Open [http://localhost:4173](http://localhost:4173). The project has no third-party runtime dependencies today. If PowerShell blocks `npm.ps1`, use `npm.cmd start` and `npm.cmd test`.
-
-Microphone capture requires `localhost` or HTTPS. Arabic speech recognition and browser TTS depend on browser/OS support; Chrome or Edge are the intended local POC targets.
-
-## Environment Variables
-
-The POC has no required environment variables and no API keys. `.env.example` only reserves future server-side integration values; the static client does not read them.
-
-| Variable | Required now | Purpose | Example |
-| --- | --- | --- | --- |
-| `API_BASE_URL` | No | Future hosted evaluation API | `http://localhost:3000` |
-| `ENABLE_MOCK_EVALUATION` | No | Future host mock switch | `true` |
-| `STT_API_KEY` | No | Server-side provider key only | `replace_with_your_key` |
-
-Never put real keys in browser code, documentation, or `.env.example`. `.env` is ignored by Git.
-
-## Running in Mock Mode
-
-The POC already runs with no external service. Browser STT, when available, creates a transcript that is normalised and compared locally with expected page text. A score of at least `0.70` is Success; otherwise the local evaluator returns Retry.
-
-For deterministic verification, use the unit tests rather than browser STT. When the browser records audio but does not return Arabic speech recognition text, the POC shows a small assisted transcript input so the assessment flow can still be tested manually.
-
-## Testing the Core Flow
-
-```bash
-npm test
-```
-
-Tests cover Arabic normalization, Success/Retry mapping, Continue after three retries, narration source/fallback, feedback, Noor voice sequencing, and recording/session guards.
-
-Manual browser checks: Success, Retry+narrator, Continue, final score, microphone denial, offline processing, and the Noor voice toggle. See the PRD and QA Strategy for full acceptance coverage.
-
-## Available Scripts
-
-| Command | Purpose |
-| --- | --- |
-| `npm start` | Starts the local static server at `http://localhost:4173`. |
-| `npm run check` | Runs JavaScript syntax checks for all active runtime modules. |
-| `npm test` | Runs the Node unit tests. |
-
-No formatter, linter, type checker, or build script is configured. This static POC has no bundling stage; syntax checks and test results are recorded in the readiness report.
-
-## Architecture
-
-- `src/app-v2.js`: UI rendering and POC session state.
-- `src/features/recording`: microphone lifecycle, level metering, optional browser STT.
-- `src/features/reading`: Arabic evaluator, feedback mapping, and edge-case guards.
-- `src/features/playback`: narrator and optional Noor voice services.
-- `src/features/analytics`: local in-memory/console POC events.
-- `localStorage`: POC name, voice preference, consent, and session checkpoint only.
-
-## Assessment Coverage
-
-- [MVP PRD](Read_with_Noor_MVP_PRD.md)
-- [Product Manager Assessment](archive/reviews/PRODUCT_MANAGER_ASSESSMENT.md) (archived)
-- [GitHub Readiness Review](archive/reviews/CODE_REVIEW_AND_GITHUB_READINESS.md) (archived)
-- [QA Strategy](QA Test Strategy.md)
-
-## Privacy and Safety
-
-- The POC does not send recordings, transcripts, names, or analytics to a server.
-- Temporary recording URLs are released when attempts are reset or abandoned.
-- Local consent is a POC gate, not a production legal-consent system.
-- Production requires approved consent, secure upload, retention/deletion, and analytics-minimisation controls.
-
-## Known Limitations
-
-- Local transcript similarity is not production audio/AI evaluation.
-- Browser STT/TTS and microphone behavior vary across devices.
-- No hosted API, authentication, persistent analytics, professional narrator pack, or device E2E suite is included.
-- Real HTTP 408/413 and provider-confidence paths require backend contract tests.
-
-## Future Improvements
-
-- Secure hosted evaluator and server-side policy enforcement.
-- Production consent and audio-retention controls.
-- Professional narrator assets, teacher calibration, persistent analytics, and mobile E2E automation.
-
-## License
-
-License not yet specified.
+- Validated Arabic child-speech recognition and pronunciation/fluency scoring.
+- Calibrated Arabic phoneme assessment for isolated vowels.
+- Human-reviewed controlled evaluation data and mobile E2E checks.
+- Interactive Nouri voice after approved audio preparation and review.

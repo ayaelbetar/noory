@@ -2,7 +2,11 @@ const ARABIC_DIACRITICS = /[\u064b-\u065f\u0670\u06d6-\u06ed]/g;
 const PUNCTUATION = /[^\p{Script=Arabic}\p{Number}\s]/gu;
 const SPACES = /\s+/g;
 
-export const SUCCESS_THRESHOLD = 0.7;
+// Teacher labels use a 0–10 score: a child passes only when the score is > 6.
+// The local comparison remains 0–1, so 0.60 is deliberately exclusive.
+export const SUCCESS_THRESHOLD = 0.6;
+// A correctly recognised fragment is not enough to pass a story page.
+export const MINIMUM_COMPLETION_FOR_PASS = 0.8;
 
 /**
  * Normalizes Arabic text for comparison without changing child-visible copy.
@@ -103,6 +107,56 @@ function lengthConfidence(expectedTokens, transcriptTokens) {
   return Math.max(0, Math.min(1, ratio));
 }
 
+const LETTER_SOUND_SPELLINGS = {
+  "b,a": "با",
+  "b,i": "بي",
+  "b,u": "بو"
+};
+
+
+function normalizeLetterSound(input) {
+  return String(input || "")
+    .trim()
+    // Unlike whole-sentence normalization, a letter-sound activity must keep
+    // the vowel mark: بَ, بِ, and بُ are three different intended answers.
+    .replace(/[^\p{Script=Arabic}\p{Mark}\p{Number}\s]/gu, " ")
+    .replace(SPACES, " ")
+    .trim();
+}
+
+/**
+ * Scores a single Arabic letter sound without collapsing its vowel. For
+ * example, بَ accepts the written form بَ and the common STT form با, but
+ * rejects the letter name باء and the distinct sounds بِ and بُ.
+ */
+function evaluateLetterSound({ expectedSpokenForm, expectedPhonemes, transcript, retryCount }) {
+  const expectedForm = normalizeLetterSound(expectedSpokenForm);
+  const heard = normalizeLetterSound(transcript);
+  const phonemeKey = (expectedPhonemes || []).join(",");
+  const phoneticSpelling = LETTER_SOUND_SPELLINGS[phonemeKey];
+  const bareLetter = normalizeArabic(expectedSpokenForm);
+  // Browser transcripts cannot reliably retain a short vowel. A bare letter is
+  // evidence of speech, but not evidence of which vowel was pronounced.
+  if (heard === bareLetter) {
+    return { outcome: "UNCERTAIN", offerContinue: retryCount + 1 >= 3, score: 0, band: "Needs Full Assistance", missingWords: [expectedForm], passed: false, status: "needs-practice" };
+  }
+  const isCorrect = Boolean(
+    expectedForm &&
+    heard &&
+    (heard === expectedForm || heard === phoneticSpelling)
+  );
+
+  return {
+    outcome: isCorrect ? "SUCCESS" : "RETRY",
+    offerContinue: !isCorrect && retryCount + 1 >= 3,
+    score: isCorrect ? 1 : 0,
+    band: isCorrect ? "Excellent Reading" : "Needs Full Assistance",
+    missingWords: isCorrect ? [] : [expectedForm],
+    passed: isCorrect,
+    status: isCorrect ? "passed" : "needs-practice"
+  };
+}
+
 /**
  * Produces the local POC outcome from expected page text and a transcript.
  * The numeric score is internal; child UI receives only Success, Retry, or Continue.
@@ -110,7 +164,17 @@ function lengthConfidence(expectedTokens, transcriptTokens) {
  * @param {{ expectedText: string, transcript: string, retryCount?: number }} input
  * @returns {{ outcome: "SUCCESS" | "RETRY", offerContinue: boolean, score: number, band: string, missingWords: string[] }}
  */
-export function evaluateReading({ expectedText, transcript, retryCount = 0 }) {
+export function evaluateReading({
+  expectedText,
+  transcript,
+  retryCount = 0,
+  activityType = "reading",
+  expectedSpokenForm = expectedText,
+  expectedPhonemes = []
+}) {
+  if (activityType === "letter-sound") {
+    return evaluateLetterSound({ expectedSpokenForm, expectedPhonemes, transcript, retryCount });
+  }
   const expected = normalizeArabic(expectedText);
   const heard = normalizeArabic(transcript);
   const expectedTokens = tokenizeArabic(expectedText);
@@ -133,14 +197,22 @@ export function evaluateReading({ expectedText, transcript, retryCount = 0 }) {
     0,
     Math.min(1, characterScore * 0.45 + coverage.score * 0.4 + lengthScore * 0.15)
   );
-  const outcome = score >= SUCCESS_THRESHOLD ? "SUCCESS" : "RETRY";
+  const passed = coverage.score >= MINIMUM_COMPLETION_FOR_PASS && score > SUCCESS_THRESHOLD;
+  const outcome = passed ? "SUCCESS" : "RETRY";
 
   return {
     outcome,
     offerContinue: outcome === "RETRY" && retryCount + 1 >= 3,
     score,
     band: readingBand(score),
-    missingWords: coverage.missing
+    missingWords: coverage.missing,
+    correctWords: coverage.matched,
+    extraWords: Math.max(0, transcriptTokens.length - coverage.matched),
+    wordOrderCorrect: expectedTokens.every((word, index) => transcriptTokens[index] === word),
+    readingComplete: coverage.matched === expectedTokens.length,
+    repeatedWords: transcriptTokens.filter((word, index) => transcriptTokens.indexOf(word) !== index),
+    passed,
+    status: passed ? "passed" : "needs-practice"
   };
 }
 

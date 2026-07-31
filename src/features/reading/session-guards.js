@@ -54,7 +54,11 @@ export function failureMessageKey(code) {
   if (["NETWORK_ERROR", "AI_TIMEOUT", "STT_FAILED", "EVALUATION_FAILED", "UPSTREAM_ERROR", "SERVICE_UNAVAILABLE"].includes(code)) {
     return code === "NETWORK_ERROR" ? "network.01" : "network.02";
   }
-  return code === "LOW_CONFIDENCE" ? "retry.02" : "retry.01";
+  // Recognition/audio uncertainty is not evidence that the child read wrongly.
+  if (["LOW_CONFIDENCE", "EMPTY_AUDIO", "INVALID_AUDIO", "UNCERTAIN", "SPEECH_RECOGNITION_UNRELIABLE"].includes(code)) {
+    return "stt.unreliable";
+  }
+  return "retry.01";
 }
 
 /** @param {string} code @returns {boolean} Whether the value is a technical failure. */

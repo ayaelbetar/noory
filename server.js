@@ -10,6 +10,7 @@ const contentTypes = {
   ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".pdf": "application/pdf",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
@@ -23,7 +24,10 @@ function safePath(urlPath) {
   try {
     const decoded = decodeURIComponent(urlPath.split("?")[0]);
     const requested = decoded === "/" ? "index.html" : decoded.replace(/^[/\\]+/, "");
-    const fullPath = resolve(root, requested);
+    // Public assets are served from the web root, matching manifest URLs such
+    // as /audio/nouri/welcome.mp3 without exposing filesystem paths.
+    const publicAsset = requested.startsWith("audio/") ? `public/${requested}` : requested;
+    const fullPath = resolve(root, publicAsset);
     const pathFromRoot = relative(root, fullPath);
     return pathFromRoot && !pathFromRoot.startsWith("..") && !pathFromRoot.includes(":")
       ? fullPath

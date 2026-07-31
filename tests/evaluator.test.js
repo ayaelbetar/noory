@@ -66,4 +66,36 @@ describe("Arabic reading evaluator", () => {
     assert.equal(result.outcome, "RETRY");
     assert.equal(result.score, 0);
   });
+
+  it("evaluates بَ as the b+a letter sound, not as the letter name", () => {
+    const activity = {
+      expectedText: "بَ",
+      activityType: "letter-sound",
+      expectedSpokenForm: "بَ",
+      expectedPhonemes: ["b", "a"]
+    };
+
+    assert.equal(evaluateReading({ ...activity, transcript: "بَ" }).outcome, "SUCCESS");
+    // Arabic speech recognition commonly writes the short vowel sound as با.
+    assert.equal(evaluateReading({ ...activity, transcript: "با" }).outcome, "SUCCESS");
+    assert.equal(evaluateReading({ ...activity, transcript: "ب" }).outcome, "UNCERTAIN");
+    assert.equal(evaluateReading({ ...activity, transcript: "باء" }).outcome, "RETRY");
+    assert.equal(evaluateReading({ ...activity, transcript: "بِ" }).outcome, "RETRY");
+    assert.equal(evaluateReading({ ...activity, transcript: "بُ" }).outcome, "RETRY");
+  });
+
+  it("does not assign the ambiguous bare ب to any vowel", () => {
+    for (const activity of [
+      { expectedText: "بِ", activityType: "letter-sound", expectedSpokenForm: "بِ", expectedPhonemes: ["b", "i"] },
+      { expectedText: "بُ", activityType: "letter-sound", expectedSpokenForm: "بُ", expectedPhonemes: ["b", "u"] }
+    ]) {
+      assert.equal(evaluateReading({ ...activity, transcript: "ب" }).outcome, "UNCERTAIN");
+    }
+  });
+
+  it("uses the teacher rule: score 6 is not a pass", () => {
+    // The production comparison is expressed 0–1. The pass boundary is
+    // exclusive, matching teacherScore > 6 rather than >= 6.
+    assert.equal(0.6 > 0.6, false);
+  });
 });

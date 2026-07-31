@@ -16,6 +16,7 @@ export class RecordingController {
     this.animationFrame = 0;
     this.recognition = null;
     this.transcript = "";
+    this.confirmedTranscript = "";
     this.maxLevel = 0;
   }
 
@@ -43,6 +44,7 @@ export class RecordingController {
     this.cleanup();
     this.chunks = [];
     this.transcript = "";
+    this.confirmedTranscript = "";
     this.maxLevel = 0;
     this.startedAt = performance.now();
     this.stream = await navigator.mediaDevices.getUserMedia({
@@ -105,11 +107,30 @@ export class RecordingController {
     this.recognition.interimResults = true;
     this.recognition.addEventListener("result", (event) => {
       let text = "";
+      let isFinal = true;
+      let confidence = 0;
+      let confirmedText = "";
+      let confirmedConfidence = 0;
       for (let index = 0; index < event.results.length; index += 1) {
-        text += event.results[index][0]?.transcript || "";
+        const result = event.results[index];
+        const resultText = result[0]?.transcript || "";
+        text = `${text} ${resultText}`.trim();
+        isFinal = isFinal && Boolean(result.isFinal);
+        confidence = Math.max(confidence, Number(result[0]?.confidence) || 0);
+        if (result.isFinal) {
+          confirmedText = `${confirmedText} ${resultText}`.trim();
+          confirmedConfidence = Math.max(confirmedConfidence, Number(result[0]?.confidence) || 0);
+        }
       }
       this.transcript = text;
-      this.onTranscript(this.transcript);
+      this.confirmedTranscript = confirmedText;
+      this.onTranscript({
+        text: this.transcript,
+        isFinal,
+        confidence,
+        confirmedText: this.confirmedTranscript,
+        confirmedConfidence
+      });
     });
     this.recognition.addEventListener("error", () => this.onStatus("speech-error"));
 

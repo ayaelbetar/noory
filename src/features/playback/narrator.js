@@ -1,7 +1,7 @@
 /**
  * Plays narration for the exact current page. It prefers supplied narrator audio
- * and falls back to Arabic browser TTS for the POC. This service is intentionally
- * independent from Noor's optional feedback-voice setting.
+ * and never falls back to browser TTS. This service is intentionally independent
+ * from Noor's optional feedback-voice setting.
  */
 export class NarratorService {
   constructor({ onStart = () => {}, onEnd = () => {}, onError = () => {} } = {}) {
@@ -13,15 +13,15 @@ export class NarratorService {
     this.stopActivePlayback = null;
   }
 
-  /** @param {{ audioSrc?: string, narratorText?: string, text?: string }} page @returns {Promise<void>} */
+  /** @param {{ narratorAudioUrl?: string, expectedText?: string }} page @returns {Promise<void>} */
   async playPage(page) {
     this.stop();
     const playbackId = this.playbackId;
     this.onStart();
 
     try {
-      if (page.audioSrc) await this.playAudio(page.audioSrc, playbackId);
-      else await this.speak(page.narratorText || page.text, playbackId);
+      if (!page.narratorAudioUrl) throw new Error("NARRATOR_AUDIO_UNAVAILABLE");
+      await this.playAudio(page.narratorAudioUrl, playbackId);
       if (playbackId === this.playbackId) this.onEnd();
     } catch (error) {
       if (playbackId === this.playbackId) {
@@ -46,32 +46,6 @@ export class NarratorService {
     });
   }
 
-  /** @param {string} text @param {number} playbackId @returns {Promise<void>} */
-  speak(text, playbackId) {
-    return new Promise((resolve, reject) => {
-      if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
-        reject(new Error("SPEECH_SYNTHESIS_UNAVAILABLE"));
-        return;
-      }
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      const voices = window.speechSynthesis.getVoices();
-      const arabicVoice = voices.find((voice) => voice.lang?.toLowerCase().startsWith("ar"));
-      if (arabicVoice) utterance.voice = arabicVoice;
-      utterance.lang = arabicVoice?.lang || "ar-SA";
-      utterance.rate = 0.82;
-      utterance.pitch = 1.04;
-      utterance.onend = () => {
-        if (playbackId === this.playbackId) this.stopActivePlayback = null;
-        resolve();
-      };
-      utterance.onerror = reject;
-      this.stopActivePlayback = utterance.onend;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utterance);
-    });
-  }
-
   /** Stops the active narrator source and resolves any pending playback callback. */
   stop() {
     this.playbackId += 1;
@@ -80,7 +54,6 @@ export class NarratorService {
       this.audio.currentTime = 0;
       this.audio = null;
     }
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
     if (this.stopActivePlayback) {
       const finish = this.stopActivePlayback;
       this.stopActivePlayback = null;

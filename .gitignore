@@ -13,12 +13,34 @@ dist/
 build/
 coverage/
 .cache/
+.tools/
+.venv*/
+venv/
+env/
+.python-version
 
 # Local recordings, databases, and temporary output
 tmp-recordings/
 recordings/
 private-recordings/
+data/letter-calibration/
+data/evaluation/
 uploads/
+data/evaluation/audio/
+docs/pilot-human-review.md
+scripts/play-pilot-human-review.ps1
+docs/pilot-*.md
+docs/teacher-*.md
+docs/model-evaluation.md
+provided material/
+*.pdf
+__pycache__/
+
+# Raw source material not required by the submitted runtime. The visible books
+# use their mapped page WebP images and per-page narrator MP3 files instead.
+assets/books/baa/book.pdf
+assets/books/*/narration/*كاملة*.mp3
+assets/books/mosque/narration/cover.mp3
 *.webm
 *.wav
 *.m4a
@@ -26,6 +48,10 @@ uploads/
 *.sqlite
 *.sqlite3
 *.log
+*.onnx
+*.pt
+*.pth
+*.safetensors
 
 # Local archives can contain copies of source files or private test material.
 *.zip

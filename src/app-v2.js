@@ -1,8 +1,15 @@
 import { t, toArabicNumber } from "./core/messages.js";
 import { books } from "./data/books.js";
 import { track } from "./features/analytics/analytics.js";
-import { evaluateReading, normalizeArabic } from "./features/reading/evaluator.js";
+import { normalizeArabic } from "./features/reading/evaluator.js";
+import { evaluateChildReading } from "./features/reading/reading-evaluation-service.js";
+import { alignLiveReading, getConfirmedReadingCompletion } from "./features/reading/live-highlighting.js";
 import { createFeedbackPresentation } from "./features/reading/feedback.js";
+import {
+  applyConfirmedEvaluationReward,
+  calculateFinalReadingScore,
+  getSessionRewards
+} from "./features/reading/session-rewards.js";
 import {
   MAX_RECORDING_SECONDS,
   canSubmit,
@@ -12,36 +19,50 @@ import {
 } from "./features/reading/session-guards.js";
 import { RecordingController } from "./features/recording/recorder.js";
 import { NarratorService } from "./features/playback/narrator.js";
-import { VoiceFeedbackService } from "./features/playback/voice-feedback.js";
 
 const app = document.querySelector("#app");
 const CHILD_NAME_STORAGE_KEY = "noory.childName";
 const NAME_PROMPT_SEEN_STORAGE_KEY = "noory.namePromptSeen";
-const VOICE_FEEDBACK_STORAGE_KEY = "noory.voiceFeedbackEnabled";
+// Deliberately off for the submitted POC. Nouri stays visible with on-screen
+// guidance, but no Nouri audio is requested, loaded, or played.
+const NOURI_ENABLED = false;
 const PARENT_CONSENT_STORAGE_KEY = "noory.readWithNoorConsent";
 const SESSION_STORAGE_KEY = "noory.readWithNoorSession";
 const EVALUATION_TIMEOUT_MS = 30_000;
+// The letter book is visible as clearly labelled, non-scored practice. Its
+// short-vowel activities never claim an unverified success.
+const visibleBooks = books;
 const discoveryItems = [
-  { label: "هو الحبيب", className: "category-cover prophet", action: "" },
+  { label: "هو الحبيب", className: "category-cover prophet", action: "", imageUrl: "./assets/images/noory-categories/ho-el-habib.jfif" },
   { label: "اقرأ مع نور", className: "category-cover noor-feature", action: "noor" },
-  { label: "محتوى آمن", className: "category-cover safe", action: "" },
-  { label: "محتوى مراجع", className: "category-cover reviewed", action: "" }
+  { label: "محتوى آمن", className: "category-cover safe", action: "", imageUrl: "./assets/images/noory-categories/safe-content.jfif" },
+  { label: "محتوى مراجع", className: "category-cover reviewed", action: "", imageUrl: "./assets/images/noory-categories/reviewed-content.jfif" }
 ];
 const radioItems = [
-  { title: "مغامرات مشعل في رمضان", meta: "١٦ كتاب", className: "radio-art ramadan" },
-  { title: "كوكي العجائب", meta: "١٢ كتاب", className: "radio-art wonder" }
+  {
+    title: "كوكب العجائب - الحركة",
+    meta: "١٢ كتاب",
+    quality: "عالية",
+    imageUrl: "./assets/images/noory-radio/kokab-alajaaeb-alharaka.jpg"
+  },
+  {
+    title: "حكاية حمزة الفلسطيني",
+    meta: "٤ كتب",
+    isNooryOriginal: true,
+    imageUrl: "./assets/images/noory-radio/hikayat-hamza-palestini.jfif"
+  },
+  {
+    title: "مغامرات مشبك في رمضان",
+    meta: "٩ كتب",
+    imageUrl: "./assets/images/noory-radio/moghamarat-mashbak-ramadan.jfif"
+  },
+  {
+    title: "ماري كوري: أسطورة امرأة",
+    meta: "٣ كتب",
+    isNooryOriginal: true,
+    imageUrl: "./assets/images/noory-radio/marie-curie-legendary-woman.jpg"
+  }
 ];
-const pageIllustrations = {
-  "moon-1": "./assets/images/page-backgrounds/moon-beautiful.svg",
-  "moon-2": "./assets/images/page-backgrounds/noor-sky.svg",
-  "moon-3": "./assets/images/page-backgrounds/moon-path.svg",
-  "garden-1": "./assets/images/page-backgrounds/red-flower.svg",
-  "garden-2": "./assets/images/page-backgrounds/green-grass.svg",
-  "garden-3": "./assets/images/page-backgrounds/warm-sun.svg",
-  "journey-1": "./assets/images/page-backgrounds/small-bag.svg",
-  "journey-2": "./assets/images/page-backgrounds/river-walk.svg",
-  "journey-3": "./assets/images/page-backgrounds/happy-home.svg"
-};
 const state = {
   screen: "home",
   phase: "idle",
@@ -49,6 +70,7 @@ const state = {
   pageIndex: 0,
   pageResults: [],
   pageRetryCounts: {},
+  successfulPageIds: [],
   earnedStars: 0,
   earnedCoins: 0,
   questionAnswers: {},
@@ -59,8 +81,17 @@ const state = {
   recordingSeconds: 0,
   recordingTimerId: 0,
   liveTranscript: "",
+  liveTranscriptIsFinal: false,
+  liveTranscriptConfidence: 0,
+  confirmedTranscript: "",
+  confirmedTranscriptConfidence: 0,
+  autoCompletionTimerId: 0,
+  autoCompletionPending: false,
+  autoCompleting: false,
+  autoCompletionToken: 0,
   manualTranscript: "",
   recording: null,
+  recordingPlaybackStatus: "idle",
   feedback: null,
   noorMessage: "welcome.01",
   narratorPlaying: false,
@@ -68,8 +99,6 @@ const state = {
   feedbackPopup: null,
   childName: loadChildName(),
   namePromptSeen: hasSeenNamePrompt(),
-  voiceFeedbackEnabled: loadVoiceFeedbackPreference(),
-  voiceFeedbackPlaying: false,
   featureSettingsOpen: false,
   encouragementMessageCount: 0,
   lastPersonalizedMessageKey: "",
@@ -96,17 +125,6 @@ const narrator = new NarratorService({
   onError: () => {
     state.noorMessage = "network.02";
     state.toast = "";
-  }
-});
-
-const voiceFeedback = new VoiceFeedbackService({
-  onStart: () => {
-    state.voiceFeedbackPlaying = true;
-    render();
-  },
-  onEnd: () => {
-    state.voiceFeedbackPlaying = false;
-    render();
   }
 });
 
@@ -149,14 +167,6 @@ function completeNamePrompt() {
   }
 }
 
-function loadVoiceFeedbackPreference() {
-  try {
-    return window.localStorage.getItem(VOICE_FEEDBACK_STORAGE_KEY) !== "false";
-  } catch {
-    return true;
-  }
-}
-
 function loadParentConsent() {
   try {
     return window.localStorage.getItem(PARENT_CONSENT_STORAGE_KEY) === "true";
@@ -184,6 +194,21 @@ function loadSessionSnapshot() {
   }
 }
 
+function syncSessionRewards() {
+  const rewards = getSessionRewards(state.successfulPageIds);
+  state.successfulPageIds = rewards.successfulPageIds;
+  state.earnedStars = rewards.sessionStars;
+  state.earnedCoins = rewards.sessionCoins;
+  return rewards;
+}
+
+function successfulPageIdsFromLegacySnapshot(snapshot, book) {
+  if (Array.isArray(snapshot?.successfulPageIds)) return snapshot.successfulPageIds;
+  return (snapshot?.pageResults || []).flatMap((result, index) => (
+    result?.status === "success" && book.pages[index] ? [book.pages[index].id] : []
+  ));
+}
+
 /**
  * Saves only safe, resumable session progress—not audio or transcripts.
  * A resumed session always returns to Idle so narration/evaluation never resumes
@@ -191,11 +216,13 @@ function loadSessionSnapshot() {
  */
 function persistSession() {
   if (!state.book || state.sessionCompleted) return;
+  syncSessionRewards();
   const snapshot = {
     bookId: state.book.id,
     pageIndex: state.pageIndex,
     pageResults: state.pageResults,
     pageRetryCounts: state.pageRetryCounts,
+    successfulPageIds: state.successfulPageIds,
     earnedStars: state.earnedStars,
     earnedCoins: state.earnedCoins,
     questionAnswers: state.questionAnswers,
@@ -213,32 +240,6 @@ function persistSession() {
 function clearSessionSnapshot() {
   try { window.localStorage.removeItem(SESSION_STORAGE_KEY); } catch { /* no-op */ }
   state.resumedSession = null;
-}
-
-function saveVoiceFeedbackPreference(enabled) {
-  state.voiceFeedbackEnabled = Boolean(enabled);
-  try {
-    window.localStorage.setItem(VOICE_FEEDBACK_STORAGE_KEY, String(state.voiceFeedbackEnabled));
-  } catch {
-    // Sound remains usable for the current session when storage is unavailable.
-  }
-  if (!state.voiceFeedbackEnabled) voiceFeedback.stop();
-}
-
-function voiceCopy(key) {
-  const name = state.childName && state.currentMessageUsesName ? ` يا ${state.childName}` : "";
-  return t(key, { name });
-}
-
-function playVoiceFeedback(key, fallbackKey = "") {
-  if (!state.voiceFeedbackEnabled) return Promise.resolve();
-  const text = key.startsWith("voice.") ? voiceCopy(key) : noorMessage(key || fallbackKey);
-  return voiceFeedback.speak(text);
-}
-
-function playVoiceText(text) {
-  if (!state.voiceFeedbackEnabled) return Promise.resolve();
-  return voiceFeedback.speak(text);
 }
 
 function noorMessage(key) {
@@ -269,16 +270,73 @@ function escapeHtml(value) {
 }
 
 function resetAttempt() {
+  cancelAutomaticCompletion();
   releaseRecordingUrl();
+  state.recordingPlaybackStatus = "idle";
   state.recorderLevel = 10;
   stopRecordingTimer();
   state.recordingSeconds = 0;
   state.liveTranscript = "";
+  state.liveTranscriptIsFinal = false;
+  state.liveTranscriptConfidence = 0;
+  state.confirmedTranscript = "";
+  state.confirmedTranscriptConfidence = 0;
   state.manualTranscript = "";
   state.recording = null;
   state.feedback = null;
   state.questionResult = null;
   state.toast = "";
+}
+
+function cancelAutomaticCompletion() {
+  state.autoCompletionToken += 1;
+  if (state.autoCompletionTimerId) window.clearTimeout(state.autoCompletionTimerId);
+  state.autoCompletionTimerId = 0;
+  state.autoCompletionPending = false;
+  state.autoCompleting = false;
+}
+
+function latestConfirmedReadingCompletion() {
+  const page = currentPage();
+  if (!page || !state.confirmedTranscript) {
+    return { completion: 0, missingWords: [], orderCorrect: false, allWordsConfirmed: false };
+  }
+  return getConfirmedReadingCompletion(page.expectedText, state.confirmedTranscript, {
+    confidence: state.confirmedTranscriptConfidence
+  });
+}
+
+/** Stops only after stable, final child-microphone word matches cover the page. */
+function checkAutomaticCompletion() {
+  if (state.phase !== "recording" || state.stopInFlight || state.autoCompleting) return;
+  const current = latestConfirmedReadingCompletion();
+
+  if (!current.allWordsConfirmed) {
+    if (state.autoCompletionPending) {
+      cancelAutomaticCompletion();
+      render();
+    }
+    return;
+  }
+
+  if (state.autoCompletionPending) return;
+  const token = ++state.autoCompletionToken;
+  state.autoCompletionPending = true;
+  render();
+  state.autoCompletionTimerId = window.setTimeout(async () => {
+    state.autoCompletionTimerId = 0;
+    if (token !== state.autoCompletionToken || state.phase !== "recording") return;
+    const latest = latestConfirmedReadingCompletion();
+    if (!latest.allWordsConfirmed) {
+      state.autoCompletionPending = false;
+      render();
+      return;
+    }
+
+    state.autoCompleting = true;
+    render();
+    await stopRecording();
+  }, 800);
 }
 
 /**
@@ -303,43 +361,41 @@ function goHome() {
   cancelActiveProcessing("SESSION_EXIT");
   cleanupActiveRecording();
   narrator.stop();
-  voiceFeedback.stop();
   state.screen = "home";
   state.phase = "idle";
   state.book = null;
   state.pageIndex = 0;
   state.pageResults = [];
   state.pageRetryCounts = {};
+  state.successfulPageIds = [];
+  syncSessionRewards();
   resetAttempt();
   render();
 }
 
 function goCatalog() {
   narrator.stop();
-  voiceFeedback.stop();
   state.screen = "catalog";
   render();
 }
 
 function goNoorIntro() {
   narrator.stop();
-  voiceFeedback.stop();
   state.featureSettingsOpen = false;
   state.screen = "noor-intro";
   render();
-  playVoiceFeedback("voice.meet");
 }
 
 function openNameSetup() {
   narrator.stop();
-  voiceFeedback.stop();
   state.featureSettingsOpen = true;
   state.screen = "noor-intro";
   render();
 }
 
 function openDetails(bookId) {
-  state.book = books.find((book) => book.id === bookId);
+  state.book = visibleBooks.find((book) => book.id === bookId);
+  if (!state.book) return;
   state.screen = "details";
   render();
 }
@@ -347,7 +403,6 @@ function openDetails(bookId) {
 function goDetails() {
   cancelActiveProcessing("SESSION_EXIT");
   narrator.stop();
-  voiceFeedback.stop();
   cleanupActiveRecording();
   state.phase = "idle";
   resetAttempt();
@@ -368,23 +423,25 @@ function startSession() {
   state.pageIndex = 0;
   state.pageResults = [];
   state.pageRetryCounts = {};
-  state.earnedStars = 0;
-  state.earnedCoins = 0;
+  state.successfulPageIds = [];
+  syncSessionRewards();
   state.questionAnswers = {};
   state.questionResult = null;
   state.sessionStartedAt = Date.now();
   state.sessionEvaluations = 0;
   state.sessionCompleted = false;
+  state.encouragementMessageCount = 0;
+  state.lastPersonalizedMessageKey = "";
+  state.currentMessageUsesName = false;
   state.noorMessage = "welcome.01";
   resetAttempt();
   persistSession();
   render();
-  playVoiceFeedback("voice.welcome");
 }
 
 function resumeSession() {
   const snapshot = state.resumedSession;
-  const book = books.find((item) => item.id === snapshot?.bookId);
+  const book = visibleBooks.find((item) => item.id === snapshot?.bookId);
   if (!snapshot || !book || !state.parentConsent) return;
   state.book = book;
   state.screen = "session";
@@ -392,8 +449,8 @@ function resumeSession() {
   state.pageIndex = Math.min(snapshot.pageIndex, book.pages.length - 1);
   state.pageResults = snapshot.pageResults || [];
   state.pageRetryCounts = snapshot.pageRetryCounts || {};
-  state.earnedStars = snapshot.earnedStars || 0;
-  state.earnedCoins = snapshot.earnedCoins || 0;
+  state.successfulPageIds = successfulPageIdsFromLegacySnapshot(snapshot, book);
+  syncSessionRewards();
   state.questionAnswers = snapshot.questionAnswers || {};
   state.sessionEvaluations = snapshot.sessionEvaluations || 0;
   state.sessionStartedAt = Date.now();
@@ -416,13 +473,12 @@ async function startRecording() {
     return;
   }
   if (state.submissionInFlight || state.phase === "recording") return;
-  const pageTextFailure = validateExpectedText(currentPage()?.text);
+  const pageTextFailure = validateExpectedText(currentPage()?.expectedText);
   if (pageTextFailure) {
     handleFailure(pageTextFailure);
     return;
   }
   narrator.stop();
-  voiceFeedback.stop();
   resetAttempt();
   state.phase = "recording";
   state.recordingSeconds = 0;
@@ -435,8 +491,17 @@ async function startRecording() {
       const meter = document.querySelector("[data-meter-fill]");
       if (meter) meter.style.setProperty("--level", `${level}%`);
     },
-    onTranscript: (text) => {
+    onTranscript: ({ text, isFinal, confidence, confirmedText = "", confirmedConfidence = 0 }) => {
+      // These values come solely from the active child microphone session.
       state.liveTranscript = text;
+      state.liveTranscriptIsFinal = isFinal;
+      state.liveTranscriptConfidence = confidence;
+      state.confirmedTranscript = confirmedText;
+      state.confirmedTranscriptConfidence = confirmedConfidence;
+      if (state.screen === "session" && state.phase === "recording") {
+        checkAutomaticCompletion();
+        render();
+      }
     },
     onStatus: (status) => {
       if (status === "speech-unavailable") {
@@ -460,7 +525,6 @@ async function startRecording() {
     state.noorMessage = "mic.02";
     state.toast = "";
     render();
-    playVoiceFeedback("mic.02");
   }
 }
 
@@ -476,6 +540,7 @@ async function stopRecording() {
     stopRecordingTimer();
     const recording = await state.recorder.stop();
     state.recording = recording;
+    state.recordingPlaybackStatus = "loading";
     state.liveTranscript = recording.transcript || state.liveTranscript;
     track("page_recording_stopped", {
       storyId: state.book.id,
@@ -502,7 +567,6 @@ async function stopRecording() {
     state.phase = "idle";
     state.noorMessage = "retry.01";
     render();
-    playVoiceFeedback("retry.01");
   } finally {
     state.stopInFlight = false;
   }
@@ -556,26 +620,33 @@ async function submitRecording() {
   state.sessionEvaluations += 1;
   state.submissionInFlight = false;
 
-  const result = evaluateReading({
-    expectedText: page.text,
-    transcript,
+  const result = await evaluateChildReading({
+    page,
+    attempt: { pageId: page.id, childAudioUrl: state.recording.audioUrl, transcript },
     retryCount
   });
+  if (page.activityType === "letter-sound" && result.diagnostic &&
+    ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+    console.info("[noory isolated-letter diagnostic]", result.diagnostic);
+  }
   state.feedback = result;
 
-  if (result.outcome === "SUCCESS") {
+  const isConfirmedSuccess = result.outcome === "SUCCESS" &&
+    result.passed === true && ["passed", "correct"].includes(result.status);
+
+  if (isConfirmedSuccess) {
     const presentation = createFeedbackPresentation(result);
-    const pageWasAlreadyRewarded = state.pageResults[state.pageIndex]?.status === "success";
-    if (!pageWasAlreadyRewarded) {
-      state.pageResults[state.pageIndex] = {
-        status: "success",
-        score: result.score,
-        attempts: retryCount + 1,
-        reward: { stars: 1, coins: 5 }
-      };
-      state.earnedStars += 1;
-      state.earnedCoins += 5;
-    }
+    const pageWasAlreadyRewarded = state.successfulPageIds.includes(page.id);
+    const rewards = applyConfirmedEvaluationReward(state.successfulPageIds, page.id, result);
+    state.successfulPageIds = rewards.successfulPageIds;
+    syncSessionRewards();
+    state.pageResults[state.pageIndex] = {
+      pageId: page.id,
+      status: "success",
+      score: result.score,
+      attempts: retryCount + 1,
+      reward: pageWasAlreadyRewarded ? { stars: 0, coins: 0 } : { stars: 1, coins: 5 }
+    };
     state.phase = presentation.state;
     state.noorMessage = pick([...presentation.bubbleKeys, "success.06", "success.10", "success.11", "success.14"]);
     state.feedbackPopup = presentation.popup;
@@ -587,7 +658,6 @@ async function submitRecording() {
     });
     render();
     persistSession();
-    playVoiceFeedback(state.noorMessage);
     return;
   }
 
@@ -613,6 +683,7 @@ async function submitRecording() {
  * presents one child-safe message in Noor's bubble.
  */
 function handleFailure(code, customMessage = "") {
+  cancelAutomaticCompletion();
   state.submissionInFlight = false;
   state.processingToken += 1;
   stopRecordingTimer();
@@ -623,6 +694,8 @@ function handleFailure(code, customMessage = "") {
   if (state.recording?.audioUrl) URL.revokeObjectURL(state.recording.audioUrl);
   state.recording = null;
   state.liveTranscript = "";
+  state.liveTranscriptIsFinal = false;
+  state.liveTranscriptConfidence = 0;
   state.manualTranscript = "";
   state.feedback = null;
   state.phase = "idle";
@@ -642,7 +715,6 @@ function handleFailure(code, customMessage = "") {
     persistSession();
   }
   render();
-  playVoiceFeedback(state.noorMessage);
 }
 
 function cancelActiveProcessing(reason = "SESSION_EXIT") {
@@ -661,15 +733,12 @@ function cancelActiveProcessing(reason = "SESSION_EXIT") {
  */
 async function playNarratorAfterRetry(result) {
   const presentation = createFeedbackPresentation(result);
+  const uncalibratedLetter = currentPage()?.activityType === "letter-sound" && result.status === "not-calibrated";
+  const needsPracticeLetter = currentPage()?.activityType === "letter-sound" && result.status === "needs-practice";
   state.feedbackPopup = presentation.popup;
   state.phase = "narrator";
-  state.noorMessage = pick([presentation.preNarratorKey, "retry.05", "retry.07", "retry.14"]);
+  state.noorMessage = uncalibratedLetter ? "letter.practice_retry" : pick([presentation.preNarratorKey, "retry.05", "retry.07", "retry.14"]);
   render();
-  if (state.voiceFeedbackEnabled) {
-    await playVoiceFeedback(state.noorMessage);
-    const hintWord = state.feedback?.missingWords?.find(Boolean);
-    if (hintWord) await playVoiceText(`استمع إلى هذه الكلمة: ${hintWord}`);
-  }
   state.noorMessage = presentation.narratorKey;
   render();
   track("narrator_started", {
@@ -681,7 +750,9 @@ async function playNarratorAfterRetry(result) {
   // Navigation/background recovery may have cancelled playback while awaiting it.
   if (state.phase !== "narrator" || !state.book || !currentPage()) return;
   state.phase = presentation.state;
-  state.noorMessage = presentation.postNarratorKey;
+  state.noorMessage = needsPracticeLetter
+    ? "letter.needs_practice"
+    : uncalibratedLetter ? "letter.practice_retry" : presentation.postNarratorKey;
   render();
 }
 
@@ -690,10 +761,50 @@ function retryPage() {
   startRecording();
 }
 
+/** Preloads the following page's static image and narration without playing it. */
+function preloadNextPage() {
+  const next = state.book?.pages[state.pageIndex + 1];
+  if (!next) return;
+  if (next.imageUrl) {
+    const image = new Image();
+    image.src = next.imageUrl;
+  }
+  if (next.narratorAudioUrl) {
+    const audio = new Audio();
+    audio.preload = "auto";
+    audio.src = next.narratorAudioUrl;
+  }
+}
+
+function movePage(offset) {
+  const nextIndex = state.pageIndex + offset;
+  if (!state.book || nextIndex < 0 || nextIndex >= state.book.pages.length) return;
+  narrator.stop();
+  state.pageIndex = nextIndex;
+  state.phase = "idle";
+  state.feedback = null;
+  state.feedbackPopup = null;
+  state.liveTranscript = "";
+  state.manualTranscript = "";
+  // "أنا أستمع…" is reserved for an active microphone only.
+  state.noorMessage = "before.03";
+  resetAttempt();
+  persistSession();
+  render();
+}
+
+function pageNavigation() {
+  return `<nav class="page-navigation" aria-label="التنقل بين صفحات القصة">
+    <button class="secondary-button" data-action="previous-page" ${state.pageIndex === 0 ? "disabled" : ""}>الصفحة السابقة</button>
+    <button class="secondary-button" data-action="next-page-manual" ${state.pageIndex + 1 >= state.book.pages.length ? "disabled" : ""}>الصفحة التالية</button>
+  </nav>`;
+}
+
 function nextPage(status = "success") {
   const page = currentPage();
-  if (status === "continued") {
+  if (status === "continued" && !state.successfulPageIds.includes(page.id)) {
     state.pageResults[state.pageIndex] = {
+      pageId: page.id,
       status: "continued",
       score: state.feedback?.score || 0,
       attempts: state.pageRetryCounts[page.id] || 3
@@ -712,7 +823,6 @@ function nextPage(status = "success") {
   resetAttempt();
   persistSession();
   render();
-  playVoiceFeedback("voice.start_reading");
 }
 
 /**
@@ -729,11 +839,10 @@ function completeSession() {
   state.noorMessage = "complete.01";
   track("reading_session_completed", {
     storyId: state.book.id,
-    completedPages: state.pageResults.length,
+    completedPages: state.successfulPageIds.length,
     totalPages: state.book.pages.length
   });
   render();
-  playVoiceFeedback("voice.complete");
 }
 
 function render() {
@@ -773,18 +882,18 @@ function renderHome() {
 
       <section class="content-section">
         <h2>راديو نوري</h2>
-        <div class="media-grid">
+        <div class="media-grid radio-rail" aria-label="برامج راديو نوري">
           ${radioItems.map(radioCard).join("")}
         </div>
       </section>
 
       <section class="content-section">
         <div class="section-head">
-          <h2>قصص مميزة جدًا - حصلت على جوائز</h2>
+          <h2 class="section-title--compact">قصص اقرأ مع نور</h2>
           <button class="text-link" data-action="catalog">مشاهدة الكل</button>
         </div>
-        <div class="book-shelf">
-          ${books.slice(0, 2).map(homeBookCard).join("")}
+        <div class="book-shelf book-shelf--rail" aria-label="باقي قصص اقرأ مع نور">
+          ${visibleBooks.map(homeBookCard).join("")}
         </div>
       </section>
     </main>
@@ -812,7 +921,6 @@ function renderNoorIntro() {
           <label class="child-name-label" for="child-name">ما اسمك؟</label>
           <input id="child-name" class="child-name-input" type="text" maxlength="30" autocomplete="given-name" placeholder="اكتب اسمك" value="${escapeHtml(state.childName)}">
           <p class="child-name-hint">الاسم اختياري، ويمكنك تعديله لاحقًا.</p>
-          <label class="voice-feedback-setting"><input id="voice-feedback-enabled" type="checkbox" ${state.voiceFeedbackEnabled ? "checked" : ""}> <span>🔊 صوت نور</span></label>
           <label class="voice-feedback-setting consent-setting"><input id="parent-consent" type="checkbox" ${state.parentConsent ? "checked" : ""}> <span>أوافق بصفتي ولي الأمر على استخدام الميكروفون لتدريب القراءة.</span></label>
         ` : `<p class="noor-ready">هيا نبدأ رحلة قراءة جديدة! <span aria-hidden="true">📚</span></p>`}
       </section>
@@ -828,7 +936,8 @@ function renderNoorIntro() {
 function discoveryItem(item) {
   const tag = item.action ? "button" : "div";
   const action = item.action ? ` data-action="${item.action}"` : "";
-  const image = item.action ? `<img src="./assets/images/noor-recording-reader-cropped.png" alt="">` : `<span aria-hidden="true"></span>`;
+  const imageUrl = item.imageUrl || (item.action ? "./assets/images/noor-recording-reader-cropped.png" : "");
+  const image = imageUrl ? `<img src="${imageUrl}" alt="">` : `<span aria-hidden="true"></span>`;
   return `
     <${tag} class="category-item"${action}>
       <span class="${item.className}">${image}</span>
@@ -839,13 +948,15 @@ function discoveryItem(item) {
 
 function radioCard(item) {
   return `
-    <article class="media-card">
-      <div class="${item.className}">
-        <span>${item.title}</span>
+    <article class="media-card" aria-label="${item.title}">
+      <div class="radio-art radio-art--cover">
+        <img src="${item.imageUrl}" alt="غلاف ${item.title}">
       </div>
       <div class="chip-row">
         <span class="soft-chip">جميع الأعمار</span>
         <span class="soft-chip">${item.meta}</span>
+        ${item.quality ? `<span class="soft-chip">${item.quality}</span>` : ""}
+        ${item.isNooryOriginal ? `<span class="noory-original" aria-label="أعمال نوري الأصلية"><span aria-hidden="true">♛</span> نوري</span>` : ""}
       </div>
     </article>
   `;
@@ -858,6 +969,7 @@ function homeBookCard(book) {
       <span class="home-book-title">${book.title}</span>
       <span class="chip-row">
         <span class="soft-chip">${book.level}</span>
+        ${book.practiceOnly ? `<span class="soft-chip">تدريب غير محسوب</span>` : ""}
         <span class="soft-chip">${toArabicNumber(book.pages.length)} صفحات</span>
       </span>
     </button>
@@ -871,12 +983,12 @@ function renderCatalog() {
       <section class="feature-intro">
         <img src="./assets/images/noor-recording-reader-cropped.png" alt="نور">
         <div>
-          <p class="eyebrow">اختر قصة</p>
-          <h2>خذ وقتك مع نور</h2>
+          <p class="eyebrow catalog-intro-kicker">اختَر قصتك</p>
+          <h2 class="catalog-intro-title">هَيَّا نَقْرَأْ مَعَ <strong class="noor-word">نور</strong> خُطْوَةً بِخُطْوَة!</h2>
         </div>
       </section>
       <section class="library-grid reading-list" aria-label="القصص">
-        ${books.map(storyCard).join("")}
+        ${visibleBooks.map(storyCard).join("")}
       </section>
     </main>
   `;
@@ -890,6 +1002,7 @@ function storyCard(book) {
         <h3>${book.title}</h3>
         <span class="badge-row">
           <span class="badge">${book.level}</span>
+          ${book.practiceOnly ? `<span class="badge">تدريب غير محسوب</span>` : ""}
           <span class="badge">${toArabicNumber(book.pages.length)} صفحات</span>
           <span class="badge">${toArabicNumber(book.minutes)} دقائق</span>
         </span>
@@ -908,7 +1021,7 @@ function renderDetails() {
         <div>
           <p class="eyebrow">${state.book.level}</p>
           <h1>${state.book.title}</h1>
-          <p class="lead">${t("welcome.02")}</p>
+          <p class="lead">${state.book.practiceOnly ? "نتدرّب على الحروف معًا، بدون درجات." : t("welcome.02")}</p>
         </div>
       </section>
       <div class="controls">
@@ -928,18 +1041,22 @@ function renderSession() {
 
   if (isNewScreen) {
     app.innerHTML = `
-      <main class="screen storybook-screen session-screen">
+      <main class="screen storybook-screen session-screen reading-app reading-page">
         <div id="session-topbar"></div>
+        <div class="session-page-meta"></div>
         <div class="progress-track" aria-hidden="true">
           <div class="progress-fill"></div>
         </div>
         <section class="page-shell">
-          <div class="page-scene" role="img" aria-label="رسم القصة"></div>
-          <div class="page-reading-text"></div>
+          <div class="page-scene" aria-label="صفحة الكتاب الأصلية"></div>
+          <div class="expected-reading-text">
+            <div class="target-letter-slot"></div>
+            <div class="page-reading-text"></div>
+          </div>
           <div id="toast-container"></div>
         </section>
         <div class="noor-row">
-          <div class="session-recording-heading"></div>
+          ${renderNouriRecordingButton()}
           <div class="noor-bubble" role="status" aria-live="polite" aria-atomic="true"></div>
         </div>
         <div id="phase-controls-container"></div>
@@ -947,17 +1064,38 @@ function renderSession() {
     `;
   }
 
-  app.querySelector("main").className = `screen storybook-screen session-screen phase-${state.phase}`;
-  app.querySelector("#session-topbar").innerHTML = topbar(`الصفحة ${toArabicNumber(pageNumber)} من ${toArabicNumber(totalPages)}`, "details");
+  app.querySelector("main").className = `screen storybook-screen session-screen reading-app reading-page phase-${state.phase}`;
+  app.querySelector("#session-topbar").innerHTML = topbar(state.book.title, "details");
+  app.querySelector(".session-page-meta").textContent = `الصفحة ${toArabicNumber(pageNumber)} من ${toArabicNumber(totalPages)}`;
   app.querySelector(".progress-fill").style.setProperty("--progress", `${progress}%`);
-  const pageShell = app.querySelector(".page-shell");
-  pageShell.style.cssText = pageIllustrationStyle(page).replace('style="', '').slice(0, -1);
-  app.querySelector(".page-scene").style.cssText = pageIllustrationStyle(page).replace('style="', '').slice(0, -1);
-  app.querySelector(".page-reading-text").innerHTML = renderReadingText(page.text);
-  app.querySelector(".session-recording-heading").innerHTML = `${renderSessionRecordControl()}${state.phase === "recording" ? `<span class="session-recording-time" data-recording-timer>${formatRecordingTime(state.recordingSeconds)}</span>` : ""}`;
-  app.querySelector(".noor-bubble").innerHTML = noorMessage(state.noorMessage);
+  const pageScene = app.querySelector(".page-scene");
+  pageScene.innerHTML = page.imageUrl
+    ? `<img class="book-page-image" src="${page.imageUrl}" alt="صفحة ${toArabicNumber(page.pageNumber)} من ${escapeHtml(state.book.title)}">`
+    : "";
+  // A one-letter exercise already displays its reading target above. Rendering
+  // it again below duplicates the same letter without adding reading value.
+  const isSingleLetterExercise = [...normalizeArabic(page.expectedText)].length === 1;
+  app.querySelector(".page-reading-text").innerHTML = isSingleLetterExercise
+    ? ""
+    : renderReadingText(page.displayText || page.expectedText);
+  app.querySelector(".target-letter-slot").innerHTML = renderTargetLetter(page);
+  preloadNextPage();
+  // The visual message keeps the saved child's name as a warm accent on every
+  // fourth encouragement. Audio remains the approved fixed prompt file.
+  const noorRow = app.querySelector(".noor-row");
+  noorRow.innerHTML = `${renderNouriRecordingButton()}
+    <div class="noor-bubble" role="status" aria-live="polite" aria-atomic="true"></div>`;
+  const bubbleMessageKey = state.phase === "recording" || state.noorMessage !== "listen.01"
+    ? state.noorMessage
+    : "before.03";
+  noorRow.querySelector(".noor-bubble").textContent = noorMessage(bubbleMessageKey);
   app.querySelector("#toast-container").innerHTML = state.toast ? `<div class="toast">${state.toast}</div>` : "";
   app.querySelector("#phase-controls-container").innerHTML = renderPhaseControls();
+  const recordingPlayback = app.querySelector("[data-recording-playback]");
+  if (recordingPlayback && !recordingPlayback.dataset.metadataRequested) {
+    recordingPlayback.dataset.metadataRequested = "true";
+    requestAnimationFrame(() => recordingPlayback.load());
+  }
 }
 
 function startRecordingTimer() {
@@ -987,11 +1125,6 @@ function formatRecordingTime(totalSeconds) {
   return `${minutes}:${seconds}`;
 }
 
-function pageIllustrationStyle(page) {
-  const image = pageIllustrations[page?.id];
-  if (!image) return "";
-  return ` style="--page-illustration: url('${image}')"`;
-}
 function feedbackPopupTemplate() {
   if (!state.feedbackPopup) return "";
   return `
@@ -1009,13 +1142,68 @@ function feedbackPopupTemplate() {
 }
 
 function renderReadingText(text) {
-  const heardWords = new Set(normalizeArabic(state.liveTranscript).split(" ").filter(Boolean));
   const markAllRead = state.phase === "success";
+  const liveAlignment = alignLiveReading(text, state.liveTranscript, {
+    isFinal: state.liveTranscriptIsFinal,
+    confidence: state.liveTranscriptConfidence
+  });
+  const confirmedAlignment = alignLiveReading(text, state.confirmedTranscript, {
+    isFinal: true,
+    confidence: state.confirmedTranscriptConfidence
+  });
+  let wordIndex = 0;
   return String(text).split(/(\s+)/).map((part) => {
     if (!part.trim()) return part;
-    const isRead = markAllRead || heardWords.has(normalizeArabic(part));
-    return `<span class="reading-word${isRead ? " is-read" : ""}">${part}</span>`;
+    const currentIndex = wordIndex++;
+    const confirmed = confirmedAlignment[currentIndex] || { state: "unread" };
+    const wordAlignment = markAllRead || confirmed.state === "correct"
+      ? { state: "correct" }
+      : liveAlignment[currentIndex] || { state: "unread" };
+    const stateClass = ` reading-word--${wordAlignment.state}`;
+    if (wordAlignment.state === "partial") {
+      const letters = Array.from(part);
+      let letterCount = 0;
+      let splitAt = 0;
+      for (; splitAt < letters.length; splitAt += 1) {
+        if (normalizeArabic(letters[splitAt])) letterCount += 1;
+        if (letterCount >= wordAlignment.partialLength) {
+          splitAt += 1;
+          while (splitAt < letters.length && !normalizeArabic(letters[splitAt])) splitAt += 1;
+          break;
+        }
+      }
+      const matched = escapeHtml(letters.slice(0, splitAt).join(""));
+      const remaining = escapeHtml(letters.slice(splitAt).join(""));
+      return `<span class="reading-word${stateClass}"><span class="reading-letter--matched">${matched}</span>${remaining}</span>`;
+    }
+    return `<span class="reading-word${stateClass}">${escapeHtml(part)}</span>`;
   }).join("");
+}
+
+function renderTargetLetter(page) {
+  const expectedText = page.displayText || page.expectedText;
+  const normalized = normalizeArabic(expectedText);
+  if ([...normalized].length !== 1) return "";
+  // بَ receives its neutral confirmed glow only after the final
+  // narrator-reference result, never from a provisional browser transcript.
+  const isHeard = Boolean(page.activityType === "letter-sound" && state.feedback?.outcome === "SUCCESS");
+  return `<div class="target-letter${isHeard ? " is-heard" : ""}"><span>قُلْ:</span><strong>${escapeHtml(expectedText)}</strong></div>`;
+}
+
+/** Noor's character is a second, stable recording control for young readers. */
+function renderNouriRecordingButton() {
+  const completing = state.autoCompletionPending || state.autoCompleting;
+  const action = !completing && state.phase === "recording"
+    ? "stop-recording"
+    : !completing && state.phase === "retry"
+      ? "retry-page"
+      : !completing && state.phase === "idle"
+        ? "start-recording"
+        : "";
+  const label = state.phase === "recording" ? "إنهاء القراءة" : "ابدأ القراءة مع نور";
+  return `<button class="session-noori-button${state.phase === "recording" ? " is-recording" : ""}"${action ? ` data-action="${action}"` : " disabled"} aria-label="${label}">
+    <img class="session-noori" src="./assets/images/noor-recording-reader-cropped.png" alt="نور">
+  </button>`;
 }
 /** Renders the recording control in the permanent session-avatar position. */
 function renderSessionRecordControl() {
@@ -1036,15 +1224,22 @@ function renderSessionRecordControl() {
 
 function renderPhaseControls() {
   if (state.phase === "recording") {
-    return "";
+    const completing = state.autoCompletionPending || state.autoCompleting;
+    return `<div class="controls recording-controls">
+      <button class="primary-button recording-action"${completing ? " disabled" : ' data-action="stop-recording"'}>
+        <span aria-hidden="true">${completing ? "✦" : "⏹"}</span>
+        <span>${completing ? "أَحْسَنْتَ! نُرَاجِعُ قِرَاءَتَكَ…" : "إنهاء القراءة"}</span>
+        ${completing ? "" : `<small data-recording-timer>${formatRecordingTime(state.recordingSeconds)}</small>`}
+      </button>
+      ${pageNavigation()}
+    </div>`;
   }
 
   if (state.phase === "processing") {
     return `
-      <div class="controls">
-        <div class="thinking-dots" aria-hidden="true"><span></span><span></span><span></span></div>
-        <div class="meter" aria-hidden="true"><div class="meter-fill" style="--level:78%"></div></div>
-        <div class="processing-copy"><strong>نور يفكر...</strong><span>أستمع لقراءتك...</span></div>
+      <div class="controls compact-processing">
+        <button class="primary-button" disabled>نراجع قراءتك...</button>
+        ${pageNavigation()}
       </div>
     `;
   }
@@ -1052,15 +1247,16 @@ function renderPhaseControls() {
   if (state.phase === "success") {
     const stripKey = createFeedbackPresentation({ outcome: "SUCCESS" }).stripKey;
     const pageReward = state.pageResults[state.pageIndex]?.reward || { stars: 0, coins: 0 };
+    const receivedNewReward = pageReward.stars > 0;
     return `
       <div class="controls">
-        <div class="page-reward" aria-live="polite" aria-label="مكافأة هذه الصفحة">
-          <span dir="ltr">+${pageReward.stars} ⭐</span>
-          <span dir="ltr">+${pageReward.coins} 🪙</span>
-        </div>
+        ${receivedNewReward ? `<div class="page-reward" aria-live="polite" aria-label="مكافأة هذه الصفحة">
+          <span>+${toArabicNumber(pageReward.stars)} ⭐</span>
+          <span>+${toArabicNumber(pageReward.coins)} 🪙</span>
+        </div>` : ""}
         <div class="reward-total" aria-label="إجمالي مكافآت الجلسة">
           <span>إجمالي الجلسة</span>
-          <strong dir="ltr">${state.earnedStars} ⭐ &nbsp; ${state.earnedCoins} 🪙</strong>
+          <strong>${toArabicNumber(state.earnedStars)} ⭐ &nbsp; ${toArabicNumber(state.earnedCoins)} 🪙</strong>
         </div>
         <div class="result-strip">${t(stripKey)}</div>
         ${renderPageQuestion()}
@@ -1073,7 +1269,8 @@ function renderPhaseControls() {
   if (state.phase === "narrator") {
     return `
       <div class="controls">
-        <button class="primary-button" disabled>${t("loading.02")}</button>
+        <button class="primary-button" disabled>⏸ نور يقرأ الآن</button>
+        ${pageNavigation()}
       </div>
     `;
   }
@@ -1083,6 +1280,7 @@ function renderPhaseControls() {
       <div class="controls">
         ${renderRetryHint()}
         <button class="primary-button" data-action="retry-page">${t("cta.retry")}</button>
+        ${pageNavigation()}
       </div>
     `;
   }
@@ -1102,20 +1300,24 @@ function renderPhaseControls() {
 
   return `
     <div class="controls idle-controls">
-      <button class="primary-button" data-action="start-recording">
-        <span aria-hidden="true">●</span>
-        <span>${t("cta.start_reading")}</span>
-      </button>
+      <button class="primary-button" data-action="start-recording">🎙 ابدأ القراءة</button>
+      ${pageNavigation()}
     </div>
   `;
 }
 
 function renderOptionalPlayback() {
   if (!state.recording?.audioUrl) return "";
+  const page = currentPage();
+  const mime = String(state.recording.blob?.type || "").toLowerCase();
+  const extension = mime.includes("ogg") ? "ogg" : mime.includes("wav") ? "wav" : "webm";
   return `
     <details class="listen-to-reading">
       <summary>${t("cta.listen_to_reading")}</summary>
-      <audio src="${state.recording.audioUrl}" controls></audio>
+      ${state.recordingPlaybackStatus === "loading" ? `<p class="recording-playback-loading" role="status"><span aria-hidden="true"></span>جَارٍ تَجْهِيزُ تَسْجِيلِكَ…</p>` : ""}
+      ${state.recordingPlaybackStatus === "error" ? `<p class="recording-playback-error" role="status">لَمْ نَتَمَكَّنْ مِنْ تَشْغِيلِ تَسْجِيلِكَ. حَاوِلْ مَرَّةً أُخْرَى.</p>` : ""}
+      <audio src="${state.recording.audioUrl}" controls preload="metadata" data-recording-playback></audio>
+      <a class="secondary-button download-recording-link" href="${state.recording.audioUrl}" download="noory-${page?.id || "reading"}-attempt.${extension}">⇩ تَحْمِيلُ تَسْجِيلِي</a>
     </details>
   `;
 }
@@ -1152,20 +1354,17 @@ function answerQuestion(answer) {
   const page = currentPage();
   if (!page?.question) return;
   const correct = answer === page.question.answer;
-  const alreadyAnswered = Boolean(state.questionAnswers[page.id]);
   const messageKey = correct
     ? pick(["success.02", "success.03", "success.05", "success.06", "success.07", "success.10", "success.11", "success.12", "success.14", "success.15"])
     : pick(["retry.06", "retry.07", "retry.10", "retry.15"]);
   state.questionResult = { correct, primaryKey: correct ? "success.08" : null, messageKey };
   if (correct) {
     state.questionAnswers[page.id] = answer;
-    if (!alreadyAnswered) state.earnedCoins += 2;
     state.noorMessage = messageKey;
   } else {
     state.noorMessage = messageKey;
   }
   render();
-  playVoiceFeedback(messageKey);
 }
 
 function bookCover(book, extraClass = "") {
@@ -1173,19 +1372,17 @@ function bookCover(book, extraClass = "") {
   return `
     <span class="cover ${extraClass}" style="--cover:${book.coverColor}">
       ${image}
-      <span class="cover-stars" aria-hidden="true">✦</span>
-      <span class="cover-title">${book.title}</span>
     </span>
   `;
 }
 
 function renderSummary() {
   const total = state.book.pages.length;
-  const successes = state.pageResults.filter((result) => result?.status === "success").length;
+  const successes = state.successfulPageIds.length;
   const continued = state.pageResults.filter((result) => result?.status === "continued").length;
   const finished = successes + continued;
   const stars = Math.max(1, successes);
-  const finalReadingScore = total ? Math.round((successes / total) * 100) : 0;
+  const finalReadingScore = Math.round(calculateFinalReadingScore(state.successfulPageIds, total) * 100);
   const questionCount = Object.keys(state.questionAnswers).length;
   const sessionSeconds = state.sessionStartedAt ? Math.round((Date.now() - state.sessionStartedAt) / 1000) : 0;
 
@@ -1257,10 +1454,8 @@ element.addEventListener("click", () => {
       if (action === "edit-name") openNameSetup();
       if (action === "save-child-name") {
         const nameInput = app.querySelector("#child-name");
-        const voiceToggle = app.querySelector("#voice-feedback-enabled");
         const consentToggle = app.querySelector("#parent-consent");
         if (nameInput) saveChildName(nameInput.value);
-        if (voiceToggle) saveVoiceFeedbackPreference(voiceToggle.checked);
         if (consentToggle) saveParentConsent(consentToggle.checked);
         completeNamePrompt();
         state.featureSettingsOpen = false;
@@ -1282,15 +1477,26 @@ element.addEventListener("click", () => {
       if (action === "submit-recording") submitRecording();
       if (action === "retry-page") retryPage();
       if (action === "next-page") nextPage("success");
+      if (action === "previous-page") movePage(-1);
+      if (action === "next-page-manual") movePage(1);
       if (action === "continue-page") nextPage("continued");
       if (action === "answer-question") answerQuestion(element.dataset.answer);
     });
   });
 
-  const voiceToggle = app.querySelector("#voice-feedback-enabled");
-  voiceToggle?.addEventListener("change", () => saveVoiceFeedbackPreference(voiceToggle.checked));
   const consentToggle = app.querySelector("#parent-consent");
   consentToggle?.addEventListener("change", () => saveParentConsent(consentToggle.checked));
+  const recordingPlayback = app.querySelector("[data-recording-playback]");
+  recordingPlayback?.addEventListener("loadedmetadata", () => {
+    if (state.recordingPlaybackStatus === "loading") {
+      state.recordingPlaybackStatus = "ready";
+      render();
+    }
+  }, { once: true });
+  recordingPlayback?.addEventListener("error", () => {
+    state.recordingPlaybackStatus = "error";
+    render();
+  }, { once: true });
 }
 
 function pick(keys) {
@@ -1314,7 +1520,6 @@ window.addEventListener("online", () => {
     state.noorMessage = "network.online";
     state.toast = "";
     render();
-    playVoiceFeedback("network.online");
   }
 });
 
@@ -1334,7 +1539,6 @@ document.addEventListener("visibilitychange", () => {
     state.toast = "";
     stopRecordingTimer();
     render();
-    playVoiceFeedback("recording.interrupted");
   } else if (state.phase === "processing") {
     handleFailure("NETWORK_ERROR");
   } else if (state.phase === "narrator") {
@@ -1343,7 +1547,6 @@ document.addEventListener("visibilitychange", () => {
     state.noorMessage = "narrator.02";
     state.toast = "";
     render();
-    playVoiceFeedback("narrator.02");
   }
 });
 
