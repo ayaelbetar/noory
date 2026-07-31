@@ -29,7 +29,7 @@ Define how **Read with Noor** is verified before release: test layers, environme
 
 | Layer | Scope | Owner | Tools / notes |
 |-------|--------|-------|----------------|
-| **L1 — Unit** | Arabic evaluator, feedback, narrator, voice-feedback, and session-guard modules | Eng | Node.js built-in test runner (`node --test`) |
+| **L1 — Unit** | Arabic evaluator, feedback, narrator, session-rewards, reading-evaluation-service, live-highlighting, books, isolated-letter-evaluator, and session-guard modules | Eng | Node.js built-in test runner (`node --test`) |
 | **L2 — Browser UI / integration** | RTL layouts, CTA behavior, loading states, local mock outcomes | Eng / QA | Browser integration and DOM tests where practical; manual responsive and accessibility checks across target viewports |
 | **L3 — API contract** | POST `/evaluate` request/response, HTTP codes, `error.code` set, timeouts | Eng / QA | Contract tests vs `15`; optional mock server |
 | **L4 — End-to-end (manual + automated)** | Full **Reading Session** on device: consent → record → outcomes → summary | QA | Manual browser/device checks for the POC; optional future Playwright (or equivalent) E2E coverage |

@@ -1842,7 +1842,7 @@ body {
   font-weight: 700;
 }
 
-.voice-feedback-setting {
+.consent-setting {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1852,10 +1852,10 @@ body {
   font-weight: 800;
 }
 
-/* Nouri's interactive audio is intentionally deferred for this POC. Keep the
-   parent-consent setting visible while removing the unavailable voice switch. */
-.voice-feedback-setting:not(.consent-setting) {
-  display: none;
+.consent-setting input {
+  inline-size: 20px;
+  block-size: 20px;
+  accent-color: #8d31b1;
 }
 
 .recording-playback-loading,
@@ -1883,12 +1883,6 @@ body {
 
 @keyframes recording-playback-spin {
   to { transform: rotate(360deg); }
-}
-
-.voice-feedback-setting input {
-  inline-size: 20px;
-  block-size: 20px;
-  accent-color: #8d31b1;
 }
 
 .session-screen .noor-avatar.is-speaking {

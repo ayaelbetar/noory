@@ -194,7 +194,9 @@ Rules are grouped by category. Each rule includes **enforcement** (who must impl
 
 **Rule:** The **🔊 صوت نور** setting controls only Noor's optional TTS guidance, instructions, and encouragement. It MUST NOT mute, pause, hide, or otherwise affect the professional narrator audio. Narrator playback remains available and automatically plays after every eligible Retry outcome regardless of the setting.
 
-**Enforcement:** Keep `NarratorService` separate from `VoiceFeedbackService`; settings may stop only the latter.
+**Enforcement:** Keep `NarratorService` separate from optional Noor voice feedback; settings may stop only the latter.
+
+**Submitted POC (2026-07-31):** `VoiceFeedbackService` is deferred (`NOURI_ENABLED=false`). `NarratorService` remains independent and active.
 **Verification:** Turn **🔊 صوت نور** OFF, produce a Retry outcome, and verify the exact page narrator audio still plays.
 
 ---

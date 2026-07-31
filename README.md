@@ -7,6 +7,7 @@ professional narrator for that exact page after **Try Again**.
 Repository: [github.com/ayaelbetar/noory](https://github.com/ayaelbetar/noory)
 
 Manager handoff: [docs/manager-delivery-pack.md](docs/manager-delivery-pack.md)
+Full delivery index: [docs/DELIVERY_INDEX.md](docs/DELIVERY_INDEX.md)
 
 ## Included books
 
@@ -27,7 +28,7 @@ repository-relative images and professional narrator audio.
 4. After Try Again, hear the professional narrator audio for that exact page.
 5. Retry, continue page by page, and reach a final score.
 
-Confirmed words can glow while reading. Narrator playback and Nouri do not
+Confirmed words can glow while reading. Narrator playback and Noor do not
 affect recording, evaluation, glow, attempts, or rewards.
 
 ## Evaluation and rewards
@@ -83,16 +84,16 @@ npm.cmd run build
 `build` runs the static syntax check; this POC has no bundling step and no
 required environment variables or cloud credentials.
 
-## Nouri voice
+## Noor voice
 
-Interactive Nouri voice guidance is an optional future enhancement and was
+Interactive Noor voice guidance is an optional future enhancement and was
 intentionally disabled in the submitted POC. Producing an accurate,
 child-friendly Arabic voice experience requires additional voice preparation,
 pronunciation review, timing validation, development time and operating cost.
 The current POC therefore uses clear on-screen guidance and the provided
 professional narrator audio after Try Again.
 
-`NOURI_ENABLED=false`. Nouri remains a visual product character only.
+`NOURI_ENABLED=false`. Noor remains a visual product character only.
 
 ## Validation evidence and limitations
 
@@ -130,4 +131,4 @@ docs/                         POC write-up and readiness reports
 - Validated Arabic child-speech recognition and pronunciation/fluency scoring.
 - Calibrated Arabic phoneme assessment for isolated vowels.
 - Human-reviewed controlled evaluation data and mobile E2E checks.
-- Interactive Nouri voice after approved audio preparation and review.
+- Interactive Noor voice after approved audio preparation and review.

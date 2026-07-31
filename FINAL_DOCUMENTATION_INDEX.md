@@ -1,8 +1,8 @@
 # Final Documentation Index
 
-**Version:** 1.3
+**Version:** 1.4
 **Status:** **PRODUCTION READY — FROZEN** (Documentation Validation 2026-07-28)
-**Last updated:** 2026-07-30
+**Last updated:** 2026-07-31
 **Purpose:** Single registry of every specification file: owner, scope, dependencies, and who references it.
 
 **Rule:** If two documents define the same behavior, the **Owner** row wins. All others must reference the owner, not copy normative text.
@@ -25,7 +25,7 @@
 
 | Document | Owner topic | Purpose | Depends on | Referenced by |
 |----------|-------------|---------|------------|---------------|
-| `README.md` | **Terminology & package index** | Canonical terms, MVP scope, Appendix B, reading paths | `00`, `03` | All |
+| `README.md` | **POC runtime & manager handoff entry** | Local setup, submitted scope, limitations, link to `docs/` | `00`, `03` | All |
 | `00_Project_Principles.md` | **Principles & tie-breakers** | Non-negotiable product rules (child tries first, no exam UX) | — | All |
 | `01_Product_Brief.md` | **Product scope & KPIs** | Noory platform + Read with Noor MVP, Reading Summary | `00`, `03` | `99`, `06`, `07` |
 | `02_Competitive_Research.md` | Market context | Differentiation research | — | `01`, `03` |
@@ -83,7 +83,10 @@
 | `ARCHITECTURE_OVERVIEW.md` | How documents relate (graph + layers) |
 | `FINAL_DOCUMENTATION_INDEX.md` | Full file registry (owner, depends, referenced-by) |
 | `REVIEW_REPORT.md` | Frozen Product Review Board audit |
+| `docs/DELIVERY_INDEX.md` | Ordered manager/stakeholder reading list |
 | `docs/manager-delivery-pack.md` | Current manager handoff for the submitted POC |
+| `docs/POC_SCOPE_ADDENDUM.md` | Submitted POC vs PRD/spec deviations |
+| `docs/product-manager-delivery-summary.md` | Executive PM delivery assessment |
 | `docs/` | Current POC rationale, readiness, and compliance reports |
 | `CHANGELOG.md` | Documentation change log |
 

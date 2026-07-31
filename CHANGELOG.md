@@ -6,6 +6,16 @@ Format: date — summary (files touched).
 
 ---
 
+## 2026-07-31 — Manager delivery pack completion
+
+- Added `docs/DELIVERY_INDEX.md`, `docs/POC_SCOPE_ADDENDUM.md`, `docs/product-manager-delivery-summary.md`.
+- Updated `docs/manager-delivery-pack.md`, `Read_with_Noor_MVP_PRD.md`, `README.md`, navigation indexes.
+- Removed 14 unused legacy demo assets (page-backgrounds, old story covers, speak-button, record-icon-noor).
+- Fixed stale voice-feedback references in PRD and QA Test Strategy; renamed parent consent CSS class.
+- No runtime behavior changes.
+
+---
+
 ## 2026-07-30 — Repository cleanup
 
 - **Deleted:** legacy `src/app.js` (superseded by `src/app-v2.js`).

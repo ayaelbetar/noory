@@ -1,7 +1,7 @@
 # Noory Documentation Index
 
-**Version:** 1.3
-**Last updated:** 2026-07-30
+**Version:** 1.4
+**Last updated:** 2026-07-31
 **Owner:** Product + Technical Writing  
 **Status:** **PRODUCTION READY — FROZEN** (2026-07-28)  
 **Purpose:** Primary navigation entry for the Read with Noor specification package.
@@ -16,9 +16,10 @@
 
 | Role | Path |
 |------|------|
-| Everyone | `README.md` (terminology, MVP scope, reading order) |
+| Everyone | `README.md` (POC runtime, setup, manager handoff) |
+| Product / PM / Leadership | `docs/DELIVERY_INDEX.md` → manager delivery pack |
 | Engineering / Cursor | `README.md` → `ARCHITECTURE_OVERVIEW.md` → `16_Cursor_Master_Prompt.md` |
-| Product / UX | `00_Project_Principles.md` → `01_Product_Brief.md` → owner docs in registry |
+| Product / UX (frozen specs) | `00_Project_Principles.md` → `01_Product_Brief.md` → owner docs in registry |
 | QA | `07_Acceptance_Criteria.md` → `08_Edge_Cases.md` → `QA Test Strategy.md` |
 | Leadership | `99_Product_Bible.md` → `01_Product_Brief.md` |
 
@@ -34,7 +35,7 @@
 
 | Topic | Owner |
 |-------|--------|
-| Terminology | `README.md` |
+| Terminology (frozen specs) | `README.md` (POC runtime); canonical terms in frozen package via `01_Product_Brief.md` and `11_Message_Library.md` |
 | Principles & tie-breakers | `00_Project_Principles.md` |
 | Product scope & KPIs | `01_Product_Brief.md` |
 | Feature decisions | `03_Product_Decisions.md` |
@@ -71,4 +72,5 @@ repository navigation target.
 
 - `FINAL_DOCUMENTATION_INDEX.md` — complete file registry  
 - `REVIEW_REPORT.md` — Product Review Board audit (2026-07-27)  
+- `docs/DELIVERY_INDEX.md` — ordered manager delivery list
 - `docs/manager-delivery-pack.md` — current manager handoff and scope boundary

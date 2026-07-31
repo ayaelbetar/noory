@@ -1,5 +1,7 @@
 # Noory manager delivery pack
 
+**Full delivery index:** [`docs/DELIVERY_INDEX.md`](DELIVERY_INDEX.md)
+
 ## Delivery status
 
 The submitted POC is the current implementation truth. Its active entry is
@@ -8,7 +10,7 @@ the public files in `docs/`.
 
 The repository also retains a frozen specification package at the root. Those
 documents describe the 2026-07-28 planning baseline and must not override the
-implemented POC where the two differ.
+implemented POC where the two differ. See [`docs/POC_SCOPE_ADDENDUM.md`](POC_SCOPE_ADDENDUM.md).
 
 ## Submitted scope
 
@@ -21,7 +23,7 @@ implemented POC where the two differ.
 - Professional narrator audio plays for the exact page after Try Again.
 - Session rewards use unique successful page IDs: one star and five coins per
   confirmed successful page.
-- Interactive Nouri voice is deliberately disabled (`NOURI_ENABLED=false`).
+- Interactive Noor voice is deliberately disabled (`NOURI_ENABLED=false`).
   It remains a future enhancement requiring Arabic pronunciation review,
   timing validation, development time, and operating cost.
 
@@ -36,10 +38,15 @@ implemented POC where the two differ.
 
 | Need | Current source |
 | --- | --- |
+| Ordered manager reading list | `docs/DELIVERY_INDEX.md` |
 | Runtime scope, setup, limitations | `README.md` |
+| Product requirements | `Read_with_Noor_MVP_PRD.md` |
+| POC vs PRD deviations | `docs/POC_SCOPE_ADDENDUM.md` |
+| Executive PM assessment | `docs/product-manager-delivery-summary.md` |
 | POC product rationale | `docs/poc-write-up.md` |
 | Release/readiness audit | `docs/github-readiness-report.md` |
 | Requirement-by-requirement implementation audit | `docs/task-compliance-report.md` |
+| Leadership one-pager | `99_Product_Bible.md` |
 | Manager handoff | This document |
 | Frozen 2026-07-28 specifications | Root markdown package, starting at `00_Index.md` |
 

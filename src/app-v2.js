@@ -920,7 +920,7 @@ function renderNoorIntro() {
           <label class="child-name-label" for="child-name">ما اسمك؟</label>
           <input id="child-name" class="child-name-input" type="text" maxlength="30" autocomplete="given-name" placeholder="اكتب اسمك" value="${escapeHtml(state.childName)}">
           <p class="child-name-hint">الاسم اختياري، ويمكنك تعديله لاحقًا.</p>
-          <label class="voice-feedback-setting consent-setting"><input id="parent-consent" type="checkbox" ${state.parentConsent ? "checked" : ""}> <span>أوافق بصفتي ولي الأمر على استخدام الميكروفون لتدريب القراءة.</span></label>
+          <label class="consent-setting"><input id="parent-consent" type="checkbox" ${state.parentConsent ? "checked" : ""}> <span>أوافق بصفتي ولي الأمر على استخدام الميكروفون لتدريب القراءة.</span></label>
         ` : `<p class="noor-ready">هيا نبدأ رحلة قراءة جديدة! <span aria-hidden="true">📚</span></p>`}
       </section>
       <div class="controls noor-intro-actions">

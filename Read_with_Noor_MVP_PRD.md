@@ -4,6 +4,8 @@
 **Product hierarchy:** **Noory — نوري** is the main application; **Read with Noor — اقرأ مع نور** is its interactive reading feature; **Noor — نور** is the reading companion character.
 **Audience:** Product, UI/UX, Flutter, Backend, AI, QA, and Content teams
 
+> **Submitted POC (2026-07-31):** The browser POC in this repository may differ from sections below. Authoritative deviations: [`docs/POC_SCOPE_ADDENDUM.md`](docs/POC_SCOPE_ADDENDUM.md). Manager index: [`docs/DELIVERY_INDEX.md`](docs/DELIVERY_INDEX.md).
+
 ## 1. Executive Summary
 
 Read with Noor is an interactive reading feature inside the Noory application, helping children read and understand with Noor as their reading companion. اقرأ مع نور هي ميزة قراءة تفاعلية داخل تطبيق نوري، تساعد الأطفال على القراءة والفهم بمرافقة شخصية نور.
@@ -278,7 +280,7 @@ These are recorded constraints from the POC, not product claims:
 
 In addition to the existing core-loop implementation, the POC now includes a local parent-consent gate and browser-side EC-01 to EC-13 protections: offline recovery, failure-event separation, silence/short-audio/MIME/size validation, 120-second auto-stop, a 40-evaluation session cap, duplicate-action protection, local session checkpoints, and safe background interruption handling. These protections are local POC controls; a hosted evaluator must still enforce the server-side contract and real provider failures.
 
-The POC implements the feature loop—not only static screens: microphone recording, browser transcript when supported, Arabic text normalization, local Success/Retry evaluation at the documented `0.70` threshold, Retry narrator playback, three-Retry Continue, completion summary, optional child name, and independent Noor/narrator voice systems. Unit tests cover evaluator behavior, narrator playback selection, feedback states, and voice-feedback sequencing. A hosted evaluate API, failure taxonomy, and device E2E remain production work.
+The POC implements the feature loop—not only static screens: microphone recording, browser transcript when supported, Arabic text normalization, local Success/Retry evaluation at the documented `0.70` threshold, Retry narrator playback, three-Retry Continue, completion summary, optional child name, session rewards, live highlighting, and isolated letter-sound practice for configured pages. Unit tests cover evaluator behavior, narrator playback selection, feedback states, session rewards, reading-evaluation-service, live highlighting, and books configuration. Interactive Noor voice is deferred in the submitted POC (`NOURI_ENABLED=false`). A hosted evaluate API, failure taxonomy, and device E2E remain production work.
 
 ## 17. Built vs. Left Out Because of Time
 
