@@ -3,6 +3,9 @@ import { describe, it } from "node:test";
 import {
   evaluateReading,
   normalizeArabic,
+  passesReadingThreshold,
+  MINIMUM_COMPLETION_FOR_PASS,
+  SUCCESS_THRESHOLD,
   tokenizeArabic
 } from "../src/features/reading/evaluator.js";
 
@@ -93,9 +96,12 @@ describe("Arabic reading evaluator", () => {
     }
   });
 
-  it("uses the teacher rule: score 6 is not a pass", () => {
+  it("uses the submitted 0.60-exclusive rule and the 80% completion gate", () => {
     // The production comparison is expressed 0–1. The pass boundary is
     // exclusive, matching teacherScore > 6 rather than >= 6.
     assert.equal(0.6 > 0.6, false);
+    assert.equal(passesReadingThreshold({ score: SUCCESS_THRESHOLD, completionRatio: MINIMUM_COMPLETION_FOR_PASS }), false);
+    assert.equal(passesReadingThreshold({ score: SUCCESS_THRESHOLD + 0.001, completionRatio: MINIMUM_COMPLETION_FOR_PASS }), true);
+    assert.equal(passesReadingThreshold({ score: SUCCESS_THRESHOLD + 0.2, completionRatio: MINIMUM_COMPLETION_FOR_PASS - 0.01 }), false);
   });
 });

@@ -24,7 +24,17 @@ function safePath(urlPath) {
   try {
     const decoded = decodeURIComponent(urlPath.split("?")[0]);
     const requested = decoded === "/" ? "index.html" : decoded.replace(/^[/\\]+/, "");
-    // Public assets are served from the web root, matching manifest URLs such
+    const segments = requested.split(/[\\/]+/);
+    const allowed = requested === "index.html" ||
+      requested === "styles-v2.css" ||
+      requested.startsWith("src/") ||
+      requested.startsWith("assets/") ||
+      requested.startsWith("audio/");
+    // Serve only browser runtime files. The local server must not expose
+    // repository metadata, documentation, environment files, or dotfiles if
+    // it is accidentally started on a reachable network interface.
+    if (!allowed || segments.some((segment) => segment.startsWith("."))) return null;
+    // Public audio is served from the web root, matching manifest URLs such
     // as /audio/nouri/welcome.mp3 without exposing filesystem paths.
     const publicAsset = requested.startsWith("audio/") ? `public/${requested}` : requested;
     const fullPath = resolve(root, publicAsset);

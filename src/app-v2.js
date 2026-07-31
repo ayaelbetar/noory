@@ -593,6 +593,8 @@ async function submitRecording() {
     return;
   }
   const page = currentPage();
+  const pageIndex = state.pageIndex;
+  const childAudioUrl = state.recording.audioUrl;
   const retryCount = state.pageRetryCounts[page.id] || 0;
   const transcript = state.manualTranscript || state.liveTranscript || state.recording?.transcript || "";
 
@@ -602,29 +604,33 @@ async function submitRecording() {
   state.noorMessage = "loading.01";
   render();
 
-  track("page_upload_started", { storyId: state.book.id, pageId: page.id, pageIndex: state.pageIndex });
+  track("page_upload_started", { storyId: state.book.id, pageId: page.id, pageIndex });
   // Keep the transition purposeful: Noor evaluates immediately after the child
   // stops, rather than asking them to review and submit a recording first.
   const startedAt = Date.now();
-  await wait(2400);
-  if (processingToken !== state.processingToken) return;
-  if (Date.now() - startedAt > EVALUATION_TIMEOUT_MS) {
-    handleFailure("AI_TIMEOUT");
-    return;
-  }
-  if (state.offline || !navigator.onLine) {
-    handleFailure("NETWORK_ERROR");
-    return;
-  }
-  track("page_upload_completed", { storyId: state.book.id, pageId: page.id, pageIndex: state.pageIndex });
-  state.sessionEvaluations += 1;
-  state.submissionInFlight = false;
+  try {
+    await wait(2400);
+    if (processingToken !== state.processingToken || currentPage()?.id !== page.id || state.pageIndex !== pageIndex) return;
+    if (Date.now() - startedAt > EVALUATION_TIMEOUT_MS) {
+      handleFailure("AI_TIMEOUT");
+      return;
+    }
+    if (state.offline || !navigator.onLine) {
+      handleFailure("NETWORK_ERROR");
+      return;
+    }
+    track("page_upload_completed", { storyId: state.book.id, pageId: page.id, pageIndex });
+    state.sessionEvaluations += 1;
 
-  const result = await evaluateChildReading({
-    page,
-    attempt: { pageId: page.id, childAudioUrl: state.recording.audioUrl, transcript },
-    retryCount
-  });
+    const result = await evaluateChildReading({
+      page,
+      attempt: { pageId: page.id, childAudioUrl, transcript },
+      retryCount
+    });
+    // The page can change only through a guarded action, but retain this
+    // check after every await so an abandoned evaluation can never write its
+    // feedback, result, or reward to a different page.
+    if (processingToken !== state.processingToken || currentPage()?.id !== page.id || state.pageIndex !== pageIndex) return;
   if (page.activityType === "letter-sound" && result.diagnostic &&
     ["localhost", "127.0.0.1"].includes(window.location.hostname)) {
     console.info("[noory isolated-letter diagnostic]", result.diagnostic);
@@ -640,7 +646,7 @@ async function submitRecording() {
     const rewards = applyConfirmedEvaluationReward(state.successfulPageIds, page.id, result);
     state.successfulPageIds = rewards.successfulPageIds;
     syncSessionRewards();
-    state.pageResults[state.pageIndex] = {
+    state.pageResults[pageIndex] = {
       pageId: page.id,
       status: "success",
       score: result.score,
@@ -653,28 +659,37 @@ async function submitRecording() {
     track("page_outcome_success", {
       storyId: state.book.id,
       pageId: page.id,
-      pageIndex: state.pageIndex,
+      pageIndex,
       retryCount
     });
     render();
     persistSession();
-    return;
+      return;
+    }
+
+    state.pageRetryCounts[page.id] = retryCount + 1;
+    track("page_outcome_retry", {
+      storyId: state.book.id,
+      pageId: page.id,
+      pageIndex,
+      retryCount: retryCount + 1
+    });
+
+    if (result.offerContinue) {
+      track("page_continue_offered", { pageId: page.id, retryCount: retryCount + 1 });
+    }
+
+    persistSession();
+    await playNarratorAfterRetry(result);
+  } catch {
+    if (processingToken === state.processingToken && currentPage()?.id === page.id && state.pageIndex === pageIndex) {
+      handleFailure("EVALUATION_FAILED");
+    }
+  } finally {
+    if (processingToken === state.processingToken && currentPage()?.id === page.id && state.pageIndex === pageIndex) {
+      state.submissionInFlight = false;
+    }
   }
-
-  state.pageRetryCounts[page.id] = retryCount + 1;
-  track("page_outcome_retry", {
-    storyId: state.book.id,
-    pageId: page.id,
-    pageIndex: state.pageIndex,
-    retryCount: retryCount + 1
-  });
-
-  if (result.offerContinue) {
-    track("page_continue_offered", { pageId: page.id, retryCount: retryCount + 1 });
-  }
-
-  persistSession();
-  await playNarratorAfterRetry(result);
 }
 
 /**
@@ -779,6 +794,12 @@ function preloadNextPage() {
 function movePage(offset) {
   const nextIndex = state.pageIndex + offset;
   if (!state.book || nextIndex < 0 || nextIndex >= state.book.pages.length) return;
+  if (["recording", "processing", "narrator"].includes(state.phase)) return;
+  // Keep this cleanup even though the UI disables navigation in these phases:
+  // it also protects against stale clicks, keyboard activation, and future UI
+  // changes that call this function directly.
+  cancelActiveProcessing("PAGE_NAVIGATION");
+  cleanupActiveRecording();
   narrator.stop();
   state.pageIndex = nextIndex;
   state.phase = "idle";
@@ -794,9 +815,10 @@ function movePage(offset) {
 }
 
 function pageNavigation() {
+  const navigationLocked = ["recording", "processing", "narrator"].includes(state.phase);
   return `<nav class="page-navigation" aria-label="التنقل بين صفحات القصة">
-    <button class="secondary-button" data-action="previous-page" ${state.pageIndex === 0 ? "disabled" : ""}>الصفحة السابقة</button>
-    <button class="secondary-button" data-action="next-page-manual" ${state.pageIndex + 1 >= state.book.pages.length ? "disabled" : ""}>الصفحة التالية</button>
+    <button class="secondary-button" data-action="previous-page" ${navigationLocked || state.pageIndex === 0 ? "disabled" : ""}>الصفحة السابقة</button>
+    <button class="secondary-button" data-action="next-page-manual" ${navigationLocked || state.pageIndex + 1 >= state.book.pages.length ? "disabled" : ""}>الصفحة التالية</button>
   </nav>`;
 }
 
@@ -837,9 +859,13 @@ function completeSession() {
   state.screen = "summary";
   state.phase = "completed";
   state.noorMessage = "complete.01";
+  const completedPages = new Set(state.pageResults
+    .filter((result) => result?.status === "success" || result?.status === "continued")
+    .map((result) => result.pageId)
+    .filter(Boolean)).size;
   track("reading_session_completed", {
     storyId: state.book.id,
-    completedPages: state.successfulPageIds.length,
+    completedPages,
     totalPages: state.book.pages.length
   });
   render();
@@ -1377,7 +1403,7 @@ function renderSummary() {
   const successes = state.successfulPageIds.length;
   const continued = state.pageResults.filter((result) => result?.status === "continued").length;
   const finished = successes + continued;
-  const stars = Math.max(1, successes);
+  const stars = successes;
   const finalReadingScore = Math.round(calculateFinalReadingScore(state.successfulPageIds, total) * 100);
   const questionCount = Object.keys(state.questionAnswers).length;
   const sessionSeconds = state.sessionStartedAt ? Math.round((Date.now() - state.sessionStartedAt) / 1000) : 0;
@@ -1385,7 +1411,7 @@ function renderSummary() {
   app.innerHTML = `
     <main class="screen storybook-screen summary-screen">
       <header class="complete-topbar">
-        <strong>أكملت الكتاب بنجاح</strong>
+        <strong>أكملت قراءة الكتاب</strong>
       </header>
 
       <section class="complete-hero" aria-live="polite">
@@ -1393,8 +1419,8 @@ function renderSummary() {
         <span class="confetti c2" aria-hidden="true"></span>
         <span class="confetti c3" aria-hidden="true"></span>
         <div class="complete-copy">
-          <h1>رائع!</h1>
-          <p class="lead">رائع! لقد أتممت قراءة القصة.</p>
+          <h1>${successes ? "رائع!" : "أحسنت المحاولة!"}</h1>
+          <p class="lead">${successes ? "رائع! لقد أتممت قراءة القصة." : "لقد أتممت قراءة القصة، ونكمل التدريب معًا."}</p>
         </div>
         <figure class="summary-noor-card">
           <img class="summary-noor" src="./assets/images/noor-recording-reader-cropped.png" alt="نور">

@@ -9,6 +9,15 @@ export const SUCCESS_THRESHOLD = 0.6;
 export const MINIMUM_COMPLETION_FOR_PASS = 0.8;
 
 /**
+ * Keeps the submitted POC pass boundary explicit and testable. A score at the
+ * teacher-aligned 0.60 boundary is still a retry; partial readings may not
+ * pass just because their recognized fragment is similar.
+ */
+export function passesReadingThreshold({ score, completionRatio }) {
+  return completionRatio >= MINIMUM_COMPLETION_FOR_PASS && score > SUCCESS_THRESHOLD;
+}
+
+/**
  * Normalizes Arabic text for comparison without changing child-visible copy.
  *
  * @param {unknown} input
@@ -197,7 +206,7 @@ export function evaluateReading({
     0,
     Math.min(1, characterScore * 0.45 + coverage.score * 0.4 + lengthScore * 0.15)
   );
-  const passed = coverage.score >= MINIMUM_COMPLETION_FOR_PASS && score > SUCCESS_THRESHOLD;
+  const passed = passesReadingThreshold({ score, completionRatio: coverage.score });
   const outcome = passed ? "SUCCESS" : "RETRY";
 
   return {

@@ -23,7 +23,10 @@ implemented POC where the two differ. See [`docs/POC_SCOPE_ADDENDUM.md`](POC_SCO
 - Professional narrator audio plays for the exact page after Try Again.
 - Session rewards use unique successful page IDs: one star and five coins per
   confirmed successful page.
-- Interactive Noor voice is deliberately disabled (`NOURI_ENABLED=false`).
+- Story, word, and sentence pages use the submitted POC rule: normalized score
+  **> 0.60** plus word completion **>= 80%**. The frozen root specification's
+  historical 0.70 references do not override this implemented rule.
+- Interactive Nouri voice is deliberately disabled (`NOURI_ENABLED=false`).
   It remains a future enhancement requiring Arabic pronunciation review,
   timing validation, development time, and operating cost.
 
@@ -54,4 +57,7 @@ implemented POC where the two differ. See [`docs/POC_SCOPE_ADDENDUM.md`](POC_SCO
 
 Child recordings, calibration data, downloaded evaluation material, review
 notes, credentials, and local environment files are not part of the submitted
-repository and are excluded by `.gitignore`.
+repository and are excluded by `.gitignore`. The static POC does not upload or
+persist MediaRecorder blobs, but browser SpeechRecognition may use a browser
+or operating-system online recognition service; it is not configured for
+local-only recognition.

@@ -10,6 +10,12 @@
 
 **Rule:** Each topic has exactly one **owner** document. If two files disagree, the owner wins (see registry below).
 
+**Submitted POC override:** This frozen 2026-07-28 package preserves the
+planning baseline, including historical 0.70 similarity references. The active
+submitted POC is governed by `README.md` and `docs/manager-delivery-pack.md`:
+its current reading-content rule is score **> 0.60** with **>= 80%** word
+completion. Do not apply the frozen 0.70 references to the running POC.
+
 ---
 
 ## Start here

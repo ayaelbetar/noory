@@ -35,6 +35,11 @@ affect recording, evaluation, glow, attempts, or rewards.
 
 - Story, sentence, and word pages use browser Arabic STT plus normalized text
   alignment for experimental reading-content feedback.
+- The submitted POC passes only when its normalized score is **strictly above
+  0.60** and recognized word completion is at least **80%**. The 0.60 boundary
+  itself is a retry. This follows the project ground-truth convention
+  `teacherPassed = teacherScore > 6`; it is not a validated pronunciation or
+  fluency threshold.
 - Isolated short-vowel letter pages use a separate conservative evaluator.
   An unverified result never passes, glows, or earns a reward. After three
   unsuccessful attempts the child can continue with `needs-practice`.
@@ -108,10 +113,13 @@ professional narrator audio after Try Again.
 
 ## Privacy
 
-Recordings remain in the browser session and are not uploaded by this static
-POC. Child recordings, calibration data, evaluation audio, review notes,
-environment files, virtual environments, models, and `node_modules` are
-ignored by Git.
+The POC does not store or upload the MediaRecorder audio file itself; it stays
+in the current browser session. However, browser-provided SpeechRecognition
+may use the browser or operating-system recognition service, which can be an
+online service depending on the browser and device. It is not configured for
+local-only recognition. Child recordings, calibration data, evaluation audio,
+review notes, environment files, virtual environments, models, and
+`node_modules` are ignored by Git.
 
 ## Repository layout
 
