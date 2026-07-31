@@ -4,6 +4,8 @@ Mobile-friendly Arabic reading practice for children. A child opens a book,
 records a page, receives supportive content-reading feedback, and hears the
 professional narrator for that exact page after **Try Again**.
 
+Repository: [github.com/ayaelbetar/noory](https://github.com/ayaelbetar/noory)
+
 ## Included books
 
 - **حرف الباء** — 9 active pages. The book is fully available: its word pages
