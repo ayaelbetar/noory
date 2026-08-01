@@ -1,6 +1,6 @@
 # Final task-compliance audit
 
-Audit basis: source inspection and automated checks run on 2026-07-31. `PASS` means the requirement is supported by inspected code and/or the listed automated test. `NOT TESTED` means a real browser/device/manual check was not performed and is not claimed. The submitted catalog exposes **mosque** (10 pages), **girl** (28 pages), and **baa** (9 pages). In `baa`, word pages are scored normally; only isolated short-vowel pages use safe experimental practice.
+Audit basis: source inspection and automated checks run on 2026-07-31. `PASS` means the requirement is supported by inspected code and/or the listed automated test. `NOT TESTED` means a real browser/device/manual check was not performed and is not claimed. The submitted catalog exposes **mosque** (10 pages), **girl** (30 pages), and **baa** (9 pages). In `baa`, word pages are scored normally; only isolated short-vowel pages use safe experimental practice.
 
 | Requirement | Implemented | Evidence | Test result | Blocking issue |
 | --- | --- | --- | --- | --- |
@@ -12,7 +12,7 @@ Audit basis: source inspection and automated checks run on 2026-07-31. `PASS` me
 | 6. Try Again exact narrator audio | Yes | `playNarratorAfterRetry`, `NarratorService.playPage` | `narrator`, `feedback`: PASS | Browser playback manual test pending |
 | 7. Page-by-page continuation | Yes | `nextPage`, `movePage` | Code inspection: PASS | Manual E2E pending |
 | 8. Final reading score | Yes | `renderSummary`, `calculateFinalReadingScore` | `session-rewards`: PASS | Manual final screen pending |
-| Visible scope: every visible book works end-to-end | Code-supported | 3 visible books / 47 pages; all mapped assets present | Static asset audit: PASS | Manual E2E for all books pending |
+| Visible scope: every visible book works end-to-end | Code-supported | 3 visible books / 49 pages; narrator asset `girl/narration/33.mp3` is missing | Static asset audit: PARTIAL | Manual E2E for all books pending |
 | Visible scope: isolated letters are safe practice only | Yes | explicit `letter-sound` page type and safe evaluator fallback | Code inspection: PASS | None |
 | 9. Book selection loads | Yes | `renderCatalog` | NOT TESTED manually | Browser smoke pending |
 | 10. Select opens first page | Yes | `openDetails`, `startSession` resets index 0 | Code inspection: PASS | Browser smoke pending |

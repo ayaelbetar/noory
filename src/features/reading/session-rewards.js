@@ -50,3 +50,24 @@ export function calculateFinalReadingScore(successfulPageIds, totalBookPages) {
   if (total <= 0) return 0;
   return uniquePageIds(successfulPageIds).length / total;
 }
+
+/** One source of truth for final score, stars, and child-facing page totals. */
+export function getFinalReadingSummary(pages = [], successfulPageIds = []) {
+  const scoredPageIds = new Set((pages || [])
+    .filter((page) => page?.scoreInFinal !== false)
+    .map((page) => page?.id)
+    .filter(Boolean));
+  const successfulIds = uniquePageIds(successfulPageIds)
+    .filter((pageId) => scoredPageIds.has(pageId));
+  const totalScoredPages = scoredPageIds.size;
+  const successfulPages = successfulIds.length;
+  const needsPracticePages = Math.max(0, totalScoredPages - successfulPages);
+
+  return {
+    totalScoredPages,
+    successfulPages,
+    needsPracticePages,
+    scorePercent: totalScoredPages > 0 ? Math.round((successfulPages / totalScoredPages) * 100) : 0,
+    successfulPageIds: successfulIds
+  };
+}

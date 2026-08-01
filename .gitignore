@@ -21,6 +21,7 @@ env/
 
 # Local recordings, databases, and temporary output
 tmp-recordings/
+local-evaluation/
 recordings/
 private-recordings/
 data/letter-calibration/

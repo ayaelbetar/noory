@@ -4,6 +4,7 @@ import {
   applyConfirmedEvaluationReward,
   applyPageOutcomeReward,
   calculateFinalReadingScore,
+  getFinalReadingSummary,
   getSessionRewards,
   recordSuccessfulPage
 } from "../src/features/reading/session-rewards.js";
@@ -56,4 +57,28 @@ test("a new session starts with zero totals", () => {
 
 test("final reading score is separate from coins", () => {
   assert.equal(calculateFinalReadingScore(["p1", "p2"], 5), 0.4);
+});
+
+test("final summary uses unique scored pages and excludes experimental practice", () => {
+  const pages = [
+    { id: "p1" }, { id: "p2" }, { id: "p3" }, { id: "letter", scoreInFinal: false },
+    { id: "p4" }, { id: "p5" }, { id: "p6" }, { id: "p7" }, { id: "p8" }, { id: "p9" }, { id: "p10" }
+  ];
+  assert.deepEqual(getFinalReadingSummary(pages, ["p1", "p2", "p3", "p3", "letter"]), {
+    totalScoredPages: 10,
+    successfulPages: 3,
+    needsPracticePages: 7,
+    scorePercent: 30,
+    successfulPageIds: ["p1", "p2", "p3"]
+  });
+});
+
+test("final summary safely handles a book with no scored pages", () => {
+  assert.deepEqual(getFinalReadingSummary([{ id: "letter", scoreInFinal: false }], ["letter"]), {
+    totalScoredPages: 0,
+    successfulPages: 0,
+    needsPracticePages: 0,
+    scorePercent: 0,
+    successfulPageIds: []
+  });
 });

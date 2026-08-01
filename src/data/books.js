@@ -8,6 +8,10 @@ const storyPage = (bookId, number, text, audioFile, sourcePdfPage = number, acti
   id: `${bookId}-${number}`,
   pageNumber: number,
   sourcePdfPage,
+  // Some supplied story pages include the sentence inside the artwork. When a
+  // paired illustration-only page is available, keep the reading text below
+  // the image and use that clean illustration instead.
+  imageSourcePdfPage: activity.imageSourcePdfPage || sourcePdfPage,
   // Ground truth for child-reading evaluation. This is never Nouri UI copy.
   expectedText: text,
   displayText: activity.displayText || text,
@@ -19,20 +23,24 @@ const storyPage = (bookId, number, text, audioFile, sourcePdfPage = number, acti
   letterReferenceAudioUrls: activity.letterReferenceAudioUrls || {},
   letterReferenceCalibration: activity.letterReferenceCalibration || {},
   letterActivity: activity.letterActivity || null,
+  imagePosition: activity.imagePosition || "center",
+  // Isolated short-vowel practice is deliberately outside the final
+  // reading-content score until its acoustic assessment is validated.
+  scoreInFinal: activity.scoreInFinal !== false,
   // Professional page narration, used only for listening/pronunciation help.
-  narratorAudioUrl: `./assets/books/${bookId}/narration/${audioFile}`,
-  imageUrl: `./assets/books/${bookId}/pages/page-${String(sourcePdfPage).padStart(2, "0")}.webp`,
+  narratorAudioUrl: audioFile ? `./assets/books/${bookId}/narration/${audioFile}` : "",
+  imageUrl: `./assets/books/${bookId}/pages/page-${String(activity.imageSourcePdfPage || sourcePdfPage).padStart(2, "0")}.webp`,
 });
 
 // Keep each sound/word exercise once. The supplied PDF repeats the standalone
 // letter before every new word, but those duplicate pages do not add a new
 // reading item for the child.
 const baa = [
-  [2, "بَ", { displayText: "بَ", activityType: "letter-sound", expectedSpokenForm: "بَ", expectedPhonemes: ["b", "a"], letterActivity: getArabicLetterActivity("baa-fatha") }],
+  [2, "بَ", { displayText: "بَ", activityType: "letter-sound", expectedSpokenForm: "بَ", expectedPhonemes: ["b", "a"], letterActivity: getArabicLetterActivity("baa-fatha"), scoreInFinal: false }],
   [3, "بَيْتٌ", { activityType: "word" }], [5, "بَحْرٌ", { activityType: "word" }],
-  [6, "بِ", { displayText: "بِ", activityType: "letter-sound", expectedSpokenForm: "بِ", expectedPhonemes: ["b", "i"], letterActivity: getArabicLetterActivity("baa-kasra") }],
+  [6, "بِ", { displayText: "بِ", activityType: "letter-sound", expectedSpokenForm: "بِ", expectedPhonemes: ["b", "i"], letterActivity: getArabicLetterActivity("baa-kasra"), scoreInFinal: false }],
   [7, "بِطِّيخٌ", { activityType: "word" }], [9, "بِنْتٌ", { activityType: "word" }],
-  [10, "بُ", { displayText: "بُ", activityType: "letter-sound", expectedSpokenForm: "بُ", expectedPhonemes: ["b", "u"], letterActivity: getArabicLetterActivity("baa-damma") }],
+  [10, "بُ", { displayText: "بُ", activityType: "letter-sound", expectedSpokenForm: "بُ", expectedPhonemes: ["b", "u"], letterActivity: getArabicLetterActivity("baa-damma"), scoreInFinal: false }],
   [11, "بُومَةٌ", { activityType: "word" }],
   [13, "بُرْتُقَالٌ", { activityType: "word" }]
 ].map(([sourcePdfPage, text, activity], index) => storyPage(
@@ -43,6 +51,19 @@ const baa = [
   sourcePdfPage,
   activity
 ));
+
+const mosqueCleanIllustrationPages = Object.freeze({
+  2: 3,
+  5: 4,
+  6: 7,
+  8: 8,
+  9: 9,
+  11: 10,
+  13: 12,
+  15: 14,
+  17: 16,
+  19: 18
+});
 
 const mosque = [
   [2, "هُنَاكَ مَسْجِدٌ جَمِيلٌ قَرِيبٌ مِنْ مَنْزِلِي.", "1.mp3"],
@@ -55,13 +76,36 @@ const mosque = [
   [15, "مُصْحَفٌ.", "14.mp3"],
   [17, "شَيْخٌ يُعَلِّمُنَا القُرْآنَ.", "16.mp3"],
   [19, "كَمْ أُحِبُّ المَسْجِدَ!", "18.mp3"]
-].map(([number, text, audioFile]) => storyPage("mosque", number, text, audioFile));
+// Source pages are intentionally non-contiguous because illustration-only
+// pages are not reading activities. Keep their source reference, but present
+// the selected reading activities to the child as pages 1–10.
+].map(([sourcePdfPage, text, audioFile], index) => storyPage(
+  "mosque",
+  index + 1,
+  text,
+  audioFile,
+  sourcePdfPage,
+  { imageSourcePdfPage: mosqueCleanIllustrationPages[sourcePdfPage] }
+));
+
+// The supplied PDF has 31 source pages. Its cover is source page 1, so the
+// child-facing experience contains every reading page from 2 through 31.
+// The narrator pack begins with the cover recording. Pages 1–10 use the
+// verified following recordings (2–11). Recordings 12–15 are excluded from
+// this story, so page 11 resumes at recording 16 and continues sequentially.
+const girlNarratorFile = (displayPageNumber) =>
+  displayPageNumber === 28 ? "34.mp3"
+    : displayPageNumber === 29 ? "35.mp3"
+      : `${displayPageNumber <= 10 ? displayPageNumber + 1 : displayPageNumber + 5}.mp3`;
 
 const girl = [
-  "جَاءَ المَسَاء", "وَبَكَتِ الطَّفْلَةُ وَاء وَاء!", "لَعِبَ بَابَا مَعَهَا الغُمَّيْضَةَ", "وَدَعْدَعَتْهَا مَامَا لِسَاعَةٍ وَزِيَادَة", "فَضَحِكَتِ الطَّفْلَةُ لَحْظَةً", "لَكِنَّهَا عَادَتْ سَرِيعًا لِلبُكَاءِ", "وَقَفَ بَابَا عَلَى رَأْسِهِ", "وَأَخْرَجَتْ مَامَا لِسَانَهَا", "فَسَكَنَتِ الطَّفْلَةُ لَحْظَةً", "ثُمَّ عَادَتْ ثَانِيَةً لِلبُكَاءِ", "رَقَصَتِ مَامَا رَقْصَةَ الدَّجَاجَةِ", "وَجَلَسَ بَابَا فَوْقَ الثَّلَّاجَةِ", "لَكِنَّ الطَّفْلَةَ بَكَتْ وَبَكَتْ", "حَتَّى أَغْرَقَتْ دُمُوعُهَا البَيْتَ", "وَلَمَّا رَأَتْ مَامَا تَطْفُو", "وَبَابَا يَغْطِسُ", "كَرْكَرَتِ الطِّفْلَةُ لَحْظَةً", "لَكِنَّهَا عَادَتْ بِسُرْعَةٍ لِلبُكَاءِ", "ثُمَّ جَاءَ الجَدُّ", "وَمَعَهُ الجَدَّةُ", "وَجَاءَ الجِيرَانُ", "وَشُرْطَةُ النَّجْدَةِ", "وَحَاوَلُوا جَمِيعًا إِضْحَاكَهَا", "لَكِنَّ الطَّفْلَةَ اسْتَمَرَّتْ فِي البُكَاءِ", "وَفَجْأَةً سَمِعَ الكُلُّ صَوْتًا غَرِيبًا!", "وَظَهَرَ أَنَّهُ - وَيَالَعَجَبِ! كَانَ المَغَصُ هُوَ السَّبَبْ!", "وَقَبْلَ طُلُوعِ شَمْسِ اليَوْمِ", "رَاحَ الكُلُّ أَخِيرًا فِي النَّوْمِ"
-// The supplied PDF and audio pack both begin with a cover. The reading text
-// starts on source page 2, while the child-facing sequence remains 1–28.
-].map((text, index) => storyPage("girl", index + 1, text, `${index + 2}.mp3`, index + 2));
+  "جَاءَ المَسَاء", "وَبَكَتِ الطَّفْلَةُ وَاء وَاء!", "لَعِبَ بَابَا مَعَهَا الغُمَّيْضَةَ", "وَدَعْدَعَتْهَا مَامَا لِسَاعَةٍ وَزِيَادَة", "فَضَحِكَتِ الطَّفْلَةُ لَحْظَةً", "لَكِنَّهَا عَادَتْ سَرِيعًا لِلبُكَاءِ", "وَقَفَ بَابَا عَلَى رَأْسِهِ", "وَأَخْرَجَتْ مَامَا لِسَانَهَا", "فَسَكَنَتِ الطَّفْلَةُ لَحْظَةً", "ثُمَّ عَادَتْ ثَانِيَةً لِلبُكَاءِ", "رَقَصَتِ مَامَا رَقْصَةَ الدَّجَاجَةِ", "وَجَلَسَ بَابَا فَوْقَ الثَّلَّاجَةِ", "لَكِنَّ الطَّفْلَةَ بَكَتْ وَبَكَتْ", "حَتَّى أَغْرَقَتْ دُمُوعُهَا البَيْتَ", "وَلَمَّا رَأَتْ مَامَا تَطْفُو", "وَبَابَا يَغْطِسُ", "كَرْكَرَتِ الطِّفْلَةُ لَحْظَةً", "لَكِنَّهَا عَادَتْ بِسُرْعَةٍ لِلبُكَاءِ", "ثُمَّ جَاءَ الجَدُّ", "وَمَعَهُ الجَدَّةُ", "وَجَاءَ الجِيرَانُ", "وَشُرْطَةُ النَّجْدَةِ", "وَحَاوَلُوا جَمِيعًا إِضْحَاكَهَا", "لَكِنَّ الطَّفْلَةَ اسْتَمَرَّتْ فِي البُكَاءِ", "وَفَجْأَةً سَمِعَ الكُلُّ صَوْتًا غَرِيبًا!", "بْرُوووووف!", "وَظَهَرَ أَنَّهُ - وَيَالَعَجَبِ! كَانَ المَغَصُ هُوَ السَّبَبْ!", "وَقَبْلَ طُلُوعِ شَمْسِ اليَوْمِ", "وَتَوَقَّفَ الطِّفْلُ عَنِ البُكَاءِ.", "رَاحَ الكُلُّ أَخِيرًا فِي النَّوْمِ"
+// The supplied source page 30 is not part of the child-facing story.
+].filter((_text, sourceIndex) => sourceIndex !== 28).map((text, index) => {
+  const pageNumber = index + 1;
+  const sourcePdfPage = pageNumber === 29 ? 31 : pageNumber + 1;
+  return storyPage("girl", pageNumber, text, girlNarratorFile(pageNumber), sourcePdfPage);
+});
 
 export const books = [
   {

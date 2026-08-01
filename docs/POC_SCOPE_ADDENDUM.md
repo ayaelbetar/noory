@@ -18,7 +18,7 @@ The frozen markdown package (2026-07-28) remains the engineering baseline for fu
 | Gamification | No badges, streaks, or leaderboards in MVP | 1 star + 5 coins per unique confirmed successful page | Light session reward; documented POC exception |
 | Letter-sound pages | Not in frozen state machine | `needs-practice` after 3 attempts on isolated بَ/بِ/بُ pages | Experimental safe practice; does not block book completion |
 | Evaluation API | Server `/evaluate` in production spec | Browser STT + local text alignment | Expected POC scope |
-| Book catalog | Generic MVP library | 3 books, 47 pages: `baa`, `mosque`, `girl` | As delivered |
+| Book catalog | Generic MVP library | 3 books, 49 pages: `baa`, `mosque`, `girl` | As delivered |
 | Live word glow | Not specified in frozen specs | Progressive highlight during reading | Experimental UX; does not replace evaluation outcome |
 | Final score | Simple book-level percentage in Reading Summary | `successfulPages / totalBookPages` | Aligned; unverified letter pages stay in denominator only |
 

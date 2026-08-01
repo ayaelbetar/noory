@@ -7,7 +7,7 @@ import { alignLiveReading, getConfirmedReadingCompletion } from "./features/read
 import { createFeedbackPresentation } from "./features/reading/feedback.js";
 import {
   applyConfirmedEvaluationReward,
-  calculateFinalReadingScore,
+  getFinalReadingSummary,
   getSessionRewards
 } from "./features/reading/session-rewards.js";
 import {
@@ -642,8 +642,11 @@ async function submitRecording() {
 
   if (isConfirmedSuccess) {
     const presentation = createFeedbackPresentation(result);
-    const pageWasAlreadyRewarded = state.successfulPageIds.includes(page.id);
-    const rewards = applyConfirmedEvaluationReward(state.successfulPageIds, page.id, result);
+    const countsForFinalScore = page.scoreInFinal !== false;
+    const pageWasAlreadyRewarded = !countsForFinalScore || state.successfulPageIds.includes(page.id);
+    const rewards = countsForFinalScore
+      ? applyConfirmedEvaluationReward(state.successfulPageIds, page.id, result)
+      : getSessionRewards(state.successfulPageIds);
     state.successfulPageIds = rewards.successfulPageIds;
     syncSessionRewards();
     state.pageResults[pageIndex] = {
@@ -817,8 +820,14 @@ function movePage(offset) {
 function pageNavigation() {
   const navigationLocked = ["recording", "processing", "narrator"].includes(state.phase);
   return `<nav class="page-navigation" aria-label="التنقل بين صفحات القصة">
-    <button class="secondary-button" data-action="previous-page" ${navigationLocked || state.pageIndex === 0 ? "disabled" : ""}>الصفحة السابقة</button>
-    <button class="secondary-button" data-action="next-page-manual" ${navigationLocked || state.pageIndex + 1 >= state.book.pages.length ? "disabled" : ""}>الصفحة التالية</button>
+    <button class="secondary-button page-navigation__button page-navigation__button--previous" data-action="previous-page" ${navigationLocked || state.pageIndex === 0 ? "disabled" : ""}>
+      <span class="page-navigation__chevron page-navigation__chevron--right" aria-hidden="true">&gt;</span>
+      <span dir="rtl">الصفحة السابقة</span>
+    </button>
+    <button class="secondary-button page-navigation__button page-navigation__button--next" data-action="next-page-manual" ${navigationLocked || state.pageIndex + 1 >= state.book.pages.length ? "disabled" : ""}>
+      <span dir="rtl">الصفحة التالية</span>
+      <span class="page-navigation__chevron page-navigation__chevron--left" aria-hidden="true">&lt;</span>
+    </button>
   </nav>`;
 }
 
@@ -1058,7 +1067,7 @@ function renderSession() {
   const page = currentPage();
   const pageNumber = state.pageIndex + 1;
   const totalPages = state.book.pages.length;
-  const progress = Math.round((state.pageIndex / totalPages) * 100);
+  const progress = Math.round(((state.pageIndex + 1) / totalPages) * 100);
   const isNewScreen = !app.querySelector(".session-screen");
 
   if (isNewScreen) {
@@ -1070,7 +1079,7 @@ function renderSession() {
           <div class="progress-fill"></div>
         </div>
         <section class="page-shell">
-          <div class="page-scene" aria-label="صفحة الكتاب الأصلية"></div>
+          <div class="page-scene book-media-stage" aria-label="صفحة الكتاب الأصلية"></div>
           <div class="expected-reading-text">
             <div class="target-letter-slot"></div>
             <div class="page-reading-text"></div>
@@ -1094,6 +1103,8 @@ function renderSession() {
   pageScene.innerHTML = page.imageUrl
     ? `<img class="book-page-image" src="${page.imageUrl}" alt="صفحة ${toArabicNumber(page.pageNumber)} من ${escapeHtml(state.book.title)}">`
     : "";
+  const pageImage = pageScene.querySelector(".book-page-image");
+  if (pageImage) pageImage.style.objectPosition = page.imagePosition || "center";
   // A one-letter exercise already displays its reading target above. Rendering
   // it again below duplicates the same letter without adding reading value.
   const isSingleLetterExercise = [...normalizeArabic(page.expectedText)].length === 1;
@@ -1399,14 +1410,10 @@ function bookCover(book, extraClass = "") {
 }
 
 function renderSummary() {
-  const total = state.book.pages.length;
-  const successes = state.successfulPageIds.length;
-  const continued = state.pageResults.filter((result) => result?.status === "continued").length;
-  const finished = successes + continued;
-  const stars = successes;
-  const finalReadingScore = Math.round(calculateFinalReadingScore(state.successfulPageIds, total) * 100);
-  const questionCount = Object.keys(state.questionAnswers).length;
-  const sessionSeconds = state.sessionStartedAt ? Math.round((Date.now() - state.sessionStartedAt) / 1000) : 0;
+  const summary = getFinalReadingSummary(state.book.pages, state.successfulPageIds);
+  const { totalScoredPages, successfulPages, needsPracticePages, scorePercent, successfulPageIds } = summary;
+  const stars = successfulPages;
+  const pageCountLabel = (count) => count === 1 ? "صفحة واحدة" : count === 2 ? "صفحتان" : `${toArabicNumber(count)} صفحات`;
 
   app.innerHTML = `
     <main class="screen storybook-screen summary-screen">
@@ -1419,8 +1426,8 @@ function renderSummary() {
         <span class="confetti c2" aria-hidden="true"></span>
         <span class="confetti c3" aria-hidden="true"></span>
         <div class="complete-copy">
-          <h1>${successes ? "رائع!" : "أحسنت المحاولة!"}</h1>
-          <p class="lead">${successes ? "رائع! لقد أتممت قراءة القصة." : "لقد أتممت قراءة القصة، ونكمل التدريب معًا."}</p>
+          <h1>نتيجة قراءتك</h1>
+          <p class="lead">نجحت في قراءة ${pageCountLabel(successfulPages)} من ${pageCountLabel(totalScoredPages)}. مجهود رائع!</p>
         </div>
         <figure class="summary-noor-card">
           <img class="summary-noor" src="./assets/images/noor-recording-reader-cropped.png" alt="نور">
@@ -1428,21 +1435,18 @@ function renderSummary() {
         <p class="small-note">ما شاء الله! نور سعيد بقراءتك.</p>
       </section>
 
-      <div class="stars" aria-label="نجوم القراءة">${"★".repeat(stars)}${"☆".repeat(total - stars)}</div>
+      <div class="stars" aria-label="نجوم القراءة">${"★".repeat(stars)}${"☆".repeat(needsPracticePages)}</div>
       <section class="final-reading-score" aria-label="نتيجة القراءة النهائية">
         <span>${t("summary.final_score")}</span>
-        <strong>${toArabicNumber(finalReadingScore)}%</strong>
+        <strong>${toArabicNumber(scorePercent)}%</strong>
       </section>
       <section class="summary-grid">
-        <div class="summary-stat"><span><strong>${toArabicNumber(successes)}</strong>صفحات قوية</span></div>
-        <div class="summary-stat"><span><strong>${toArabicNumber(continued)}</strong>أكملناها</span></div>
-        <div class="summary-stat"><span><strong>${toArabicNumber(total)}</strong>كل الصفحات</span></div>
+        <div class="summary-stat"><span><strong>${toArabicNumber(totalScoredPages)}</strong>إجمالي الصفحات</span></div>
+        <div class="summary-stat"><span><strong>${toArabicNumber(successfulPages)}</strong>نجحت فيها</span></div>
+        <div class="summary-stat"><span><strong>${toArabicNumber(needsPracticePages)}</strong>تحتاج تدريب</span></div>
       </section>
-      <p class="small-note summary-note">${t("summary.line_pages", {
-        completedPages: toArabicNumber(finished),
-        totalPages: toArabicNumber(total)
-      })} ${t("summary.line_effort")}</p>
-      <p class="parent-insight">⭐ ${toArabicNumber(state.earnedStars)} &nbsp; 🪙 ${toArabicNumber(state.earnedCoins)} &nbsp; • &nbsp; ${toArabicNumber(questionCount)} أسئلة &nbsp; • &nbsp; ${formatSessionTime(sessionSeconds)}</p>
+      <p class="small-note summary-note">نجحت في قراءة ${pageCountLabel(successfulPages)} من ${pageCountLabel(totalScoredPages)}. مجهود رائع!</p>
+      <p class="parent-insight">⭐ ${toArabicNumber(successfulPageIds.length)} نجوم &nbsp; • &nbsp; 🪙 ${toArabicNumber(successfulPageIds.length * 5)} عملة</p>
       <div class="controls summary-actions">
         <button class="primary-button" data-action="catalog">${t("cta.read_another_story")}</button>
         <button class="secondary-button" data-action="home">العودة إلى نوري</button>

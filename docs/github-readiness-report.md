@@ -44,7 +44,7 @@ The Git candidate set contains the required runtime WebP/MP3 assets only. The 3 
 | `npm.cmd run build` | PASS — static POC syntax/build verification |
 | `npm.cmd start` README smoke test | PASS — `http://localhost:4173/` returned HTTP 200 |
 | `git diff --check` | PASS |
-| Visible-book asset audit | PASS — 3 books, 47 pages, 0 missing assets |
+| Visible-book asset audit | PARTIAL — 3 books, 49 pages; page 29 of `girl` requires the missing narrator file `33.mp3` |
 
 ### Test-count reconciliation
 

@@ -15,10 +15,13 @@ Full delivery index: [docs/DELIVERY_INDEX.md](docs/DELIVERY_INDEX.md)
   use normal reading-content evaluation and are rewarded on confirmed success.
   Only isolated **بَ / بِ / بُ** pages use safe experimental letter practice.
 - **ماذا يوجد في المسجد؟** — 10 reading pages.
-- **الطفلة التي لم تتوقف عن البكاء** — 28 reading pages.
+- **الطفلة التي لم تتوقف عن البكاء** — 30 reading pages (source cover excluded).
 
-The active catalog has 3 books and 47 pages. All active pages use local,
-repository-relative images and professional narrator audio.
+The active catalog has 3 books and 49 pages. All active pages use local,
+repository-relative images. The girl book's page 29 requires narrator file
+`assets/books/girl/narration/33.mp3`, which is not present in this checkout;
+the app intentionally reports missing narration rather than playing audio from
+another page.
 
 ## Child flow
 

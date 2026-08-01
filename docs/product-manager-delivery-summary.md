@@ -21,7 +21,7 @@ Where the implemented POC differs from the frozen 2026-07-28 specification packa
 
 | Area | Detail |
 |------|--------|
-| Catalog | `حرف الباء` (9 pages), `ماذا يوجد في المسجد؟` (10), `الطفلة التي لم تتوقف عن البكاء` (28) |
+| Catalog | `حرف الباء` (9 pages), `ماذا يوجد في المسجد؟` (10), `الطفلة التي لم تتوقف عن البكاء` (30) |
 | Reading flow | Book select → page read → record → evaluate → Success or Try Again → narrator on retry → continue → summary |
 | Baa book | Word pages use normal reading-content evaluation; isolated **بَ / بِ / بُ** pages use conservative letter-sound practice |
 | Safety | Unverified letter results never pass, glow, or earn rewards; child can continue after third unsuccessful letter attempt |

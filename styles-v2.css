@@ -970,8 +970,7 @@ body {
 .session-screen .noor-avatar,
 .read-noor-feature img,
 .category-cover.noor-feature img,
-.feedback-noor,
-.summary-noor {
+.feedback-noor {
   transform: scaleX(-1);
 }
 
@@ -2310,8 +2309,34 @@ body {
   font-size: 0.9rem;
 }
 
-.session-screen .page-navigation .secondary-button:first-child::before { content: "› "; }
-.session-screen .page-navigation .secondary-button:last-child::after { content: " ‹"; }
+.session-screen .page-navigation__button {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+  justify-content: center;
+  /* Arabic visual order: > الصفحة السابقة | الصفحة التالية <. */
+  direction: rtl;
+}
+
+.session-screen .page-navigation__chevron {
+  direction: ltr;
+  font-family: Arial, sans-serif;
+  font-size: 1.15em;
+  font-weight: 800;
+  line-height: 1;
+  unicode-bidi: isolate;
+}
+
+/* Explicit visual order for Arabic navigation: > السابق | التالي <. */
+.session-screen .page-navigation__button--previous .page-navigation__chevron--right,
+.session-screen .page-navigation__button--next [dir="rtl"] {
+  order: 0;
+}
+
+.session-screen .page-navigation__button--previous [dir="rtl"],
+.session-screen .page-navigation__button--next .page-navigation__chevron--left {
+  order: 1;
+}
 
 .session-screen .secondary-button:disabled {
   opacity: 0.46;
@@ -2931,6 +2956,8 @@ body {
   margin: 0;
   border: 0;
   box-shadow: none;
+  /* The completion image includes readable artwork; preserve its source orientation. */
+  transform: none;
 }
 
 .complete-hero .small-note {
@@ -3301,8 +3328,7 @@ body {
 .session-screen .noor-avatar,
 .read-noor-feature img,
 .category-cover.noor-feature img,
-.feedback-noor,
-.summary-noor {
+.feedback-noor {
   transform: scaleX(-1);
 }
 
@@ -3880,8 +3906,6 @@ body {
   min-height: 0;
   margin-inline: auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
   border-radius: 16px;
   background: #fff;
@@ -3894,7 +3918,7 @@ body {
   width: 100%;
   height: 100%;
   max-block-size: none;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   border-radius: inherit;
 }

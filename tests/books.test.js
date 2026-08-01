@@ -7,6 +7,8 @@ import { applyConfirmedEvaluationReward } from "../src/features/reading/session-
 
 const toLocalPath = (url) => decodeURIComponent(url.replace(/^\.\//, ""));
 const baa = books.find((book) => book.id === "baa");
+const mosque = books.find((book) => book.id === "mosque");
+const girl = books.find((book) => book.id === "girl");
 
 describe("Baa book page configuration", () => {
   it("keeps all three books visible and the Baa book selectable from its first to last page", () => {
@@ -71,6 +73,82 @@ describe("Baa book page configuration", () => {
     assert.deepEqual(once, { successfulPageIds: [wordPage.id], sessionStars: 1, sessionCoins: 5 });
     assert.deepEqual(twice, once);
     assert.equal(books.find((book) => book.id === "mosque").pages.length, 10);
-    assert.equal(books.find((book) => book.id === "girl").pages.length, 28);
+    assert.equal(girl.pages.length, 29);
+  });
+});
+
+describe("Girl book page and narrator mapping", () => {
+  it("keeps source page 1 excluded, omits source page 30, and exposes 29 active reading pages", () => {
+    assert.equal(girl.pages.length, 29);
+    assert.equal(girl.pages[0].pageNumber, 1);
+    assert.equal(girl.pages[0].sourcePdfPage, 2);
+    assert.equal(girl.pages.at(-1).pageNumber, 29);
+    assert.equal(girl.pages.at(-1).sourcePdfPage, 31);
+  });
+
+  it("keeps the verified first ten recordings and resumes at recording 16 on page 11", () => {
+    assert.equal(girl.pages[0].narratorAudioUrl, "./assets/books/girl/narration/2.mp3");
+    assert.equal(girl.pages[9].narratorAudioUrl, "./assets/books/girl/narration/11.mp3");
+    assert.equal(girl.pages[10].narratorAudioUrl, "./assets/books/girl/narration/16.mp3");
+    assert.equal(girl.pages[11].narratorAudioUrl, "./assets/books/girl/narration/17.mp3");
+    assert.equal(girl.pages[12].narratorAudioUrl, "./assets/books/girl/narration/18.mp3");
+    assert.equal(girl.pages[27].narratorAudioUrl, "./assets/books/girl/narration/34.mp3");
+    assert.equal(girl.pages[28].narratorAudioUrl, "./assets/books/girl/narration/35.mp3");
+  });
+
+  it("keeps every active image, expected text, and narrator asset after omitting source page 30", () => {
+    for (const page of girl.pages) {
+      assert.ok(page.expectedText, `${page.id} has exact expected text`);
+      assert.equal(existsSync(toLocalPath(page.imageUrl)), true, `${page.id} image exists`);
+    }
+
+    for (const page of girl.pages) {
+      const path = toLocalPath(page.narratorAudioUrl);
+      assert.equal(existsSync(path), true, `${page.id} narrator exists: ${path}`);
+      assert.ok(statSync(path).size > 0, `${page.id} narrator is non-empty: ${path}`);
+    }
+
+  });
+
+  it("treats page 29 as the only final active reading page", () => {
+    assert.notEqual(girl.pages[27].pageNumber, girl.pages.length);
+    assert.equal(girl.pages[28].pageNumber, girl.pages.length);
+  });
+});
+
+describe("Visible-book navigation and asset manifests", () => {
+  it("keeps every visible book sequential, uniquely identified, and backed by local assets", () => {
+    for (const book of books) {
+      assert.ok(book.pages.length > 0, `${book.id} has active pages`);
+      assert.deepEqual(book.pages.map((page) => page.pageNumber), Array.from(
+        { length: book.pages.length },
+        (_value, index) => index + 1
+      ), `${book.id} displays pages sequentially`);
+      assert.equal(new Set(book.pages.map((page) => page.id)).size, book.pages.length, `${book.id} page IDs are unique`);
+
+      for (const page of book.pages) {
+        assert.ok(page.expectedText, `${page.id} has expected text`);
+        assert.match(page.imageUrl, /^\.\/assets\/books\//, `${page.id} uses a repository-relative image`);
+        if (page.narratorAudioUrl) {
+          assert.match(page.narratorAudioUrl, /^\.\/assets\/books\//, `${page.id} uses a repository-relative narrator path`);
+        }
+        assert.equal(existsSync(toLocalPath(page.imageUrl)), true, `${page.id} image exists`);
+      }
+    }
+  });
+
+  it("keeps Baa's selected reading activities independent from Mosque's source-page mapping", () => {
+    assert.deepEqual(baa.pages.map((page) => page.sourcePdfPage), [2, 3, 5, 6, 7, 9, 10, 11, 13]);
+    assert.deepEqual(mosque.pages.map((page) => page.sourcePdfPage), [2, 5, 6, 8, 9, 11, 13, 15, 17, 19]);
+    assert.deepEqual(mosque.pages.map((page) => page.imageSourcePdfPage), [3, 4, 7, 8, 9, 10, 12, 14, 16, 18]);
+    assert.deepEqual(mosque.pages.map((page) => page.narratorAudioUrl.split("/").at(-1)), [
+      "1.mp3", "4.mp3", "5.mp3", "7.mp3", "8.mp3", "10.mp3", "12.mp3", "14.mp3", "16.mp3", "18.mp3"
+    ]);
+  });
+
+  it("uses the active array length for the final page of every visible book", () => {
+    for (const book of books) {
+      assert.equal(book.pages.at(-1).pageNumber, book.pages.length, `${book.id} final page matches active total`);
+    }
   });
 });
