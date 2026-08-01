@@ -26,6 +26,7 @@ function safePath(urlPath) {
     const requested = decoded === "/" ? "index.html" : decoded.replace(/^[/\\]+/, "");
     const segments = requested.split(/[\\/]+/);
     const allowed = requested === "index.html" ||
+      requested === "styles.css" ||
       requested === "styles-v2.css" ||
       requested.startsWith("src/") ||
       requested.startsWith("assets/") ||

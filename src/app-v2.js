@@ -29,6 +29,17 @@ const NOURI_ENABLED = false;
 const PARENT_CONSENT_STORAGE_KEY = "noory.readWithNoorConsent";
 const SESSION_STORAGE_KEY = "noory.readWithNoorSession";
 const EVALUATION_TIMEOUT_MS = 30_000;
+const READING_DEBUG = new URLSearchParams(window.location.search).get("debugReading") === "1";
+const readingDebugEvents = [];
+function readingDiagnostic(event, detail = {}) {
+  if (!READING_DEBUG) return;
+  const entry = { event, ...detail };
+  readingDebugEvents.push(entry);
+  if (readingDebugEvents.length > 12) readingDebugEvents.shift();
+  console.info("[noory-reading]", { at: new Date().toISOString(), ...entry });
+  const panel = document.querySelector("[data-reading-debug]");
+  if (panel) panel.textContent = readingDebugEvents.map((item) => JSON.stringify(item)).join("\n");
+}
 // The letter book is fully available. Only its isolated short-vowel activities
 // use the conservative experimental flow and never claim unverified success.
 const visibleBooks = books;
@@ -85,6 +96,7 @@ const state = {
   liveTranscriptConfidence: 0,
   confirmedTranscript: "",
   confirmedTranscriptConfidence: 0,
+  matchedWordIndexes: [],
   autoCompletionTimerId: 0,
   autoCompletionPending: false,
   autoCompleting: false,
@@ -95,6 +107,7 @@ const state = {
   feedback: null,
   noorMessage: "welcome.01",
   narratorPlaying: false,
+  narratorPlaybackFailed: false,
   toast: "",
   feedbackPopup: null,
   childName: loadChildName(),
@@ -125,7 +138,8 @@ const narrator = new NarratorService({
   onError: () => {
     state.noorMessage = "network.02";
     state.toast = "";
-  }
+  },
+  onDiagnostic: readingDiagnostic
 });
 
 function currentPage() {
@@ -281,6 +295,8 @@ function resetAttempt() {
   state.liveTranscriptConfidence = 0;
   state.confirmedTranscript = "";
   state.confirmedTranscriptConfidence = 0;
+  state.matchedWordIndexes = [];
+  state.narratorPlaybackFailed = false;
   state.manualTranscript = "";
   state.recording = null;
   state.feedback = null;
@@ -508,7 +524,8 @@ async function startRecording() {
         state.noorMessage = "listen.01";
         state.toast = "";
       }
-    }
+    },
+    onDiagnostic: readingDiagnostic
   });
 
   try {
@@ -537,11 +554,15 @@ async function stopRecording() {
   state.stopInFlight = true;
 
   try {
+    // This synchronous user gesture unlocks the narrator before the evaluator
+    // request makes automatic retry playback asynchronous.
+    narrator.unlock(currentPage()).catch((error) => readingDiagnostic("narrator-unlock-error", { name: error?.name, message: error?.message }));
     stopRecordingTimer();
     const recording = await state.recorder.stop();
     state.recording = recording;
     state.recordingPlaybackStatus = "loading";
     state.liveTranscript = recording.transcript || state.liveTranscript;
+    readingDiagnostic("recording-finalized", { mimeType: recording.blob.type, byteSize: recording.blob.size, durationMs: Math.round(recording.durationMs) });
     track("page_recording_stopped", {
       storyId: state.book.id,
       pageId: currentPage().id,
@@ -619,7 +640,6 @@ async function submitRecording() {
       handleFailure("NETWORK_ERROR");
       return;
     }
-    track("page_upload_completed", { storyId: state.book.id, pageId: page.id, pageIndex });
     state.sessionEvaluations += 1;
 
     const result = await evaluateChildReading({
@@ -627,6 +647,8 @@ async function submitRecording() {
       attempt: { pageId: page.id, childAudioUrl, transcript },
       retryCount
     });
+    readingDiagnostic("browser-evaluator-response", { status: result.status, pageNumber: page.pageNumber });
+    track("page_upload_completed", { storyId: state.book.id, pageId: page.id, pageIndex });
     // The page can change only through a guarded action, but retain this
     // check after every await so an abandoned evaluation can never write its
     // feedback, result, or reward to a different page.
@@ -636,6 +658,7 @@ async function submitRecording() {
     console.info("[noory isolated-letter diagnostic]", result.diagnostic);
   }
   state.feedback = result;
+  state.matchedWordIndexes = result.matchedWordIndexes || [];
 
   const isConfirmedSuccess = result.outcome === "SUCCESS" &&
     result.passed === true && ["passed", "correct"].includes(result.status);
@@ -750,6 +773,8 @@ function cancelActiveProcessing(reason = "SESSION_EXIT") {
  * independent from the Noor voice setting.
  */
 async function playNarratorAfterRetry(result) {
+  const page = currentPage();
+  if (!page) return;
   const presentation = createFeedbackPresentation(result);
   const uncalibratedLetter = currentPage()?.activityType === "letter-sound" && result.status === "not-calibrated";
   const needsPracticeLetter = currentPage()?.activityType === "letter-sound" && result.status === "needs-practice";
@@ -764,13 +789,26 @@ async function playNarratorAfterRetry(result) {
     pageId: currentPage().id,
     pageIndex: state.pageIndex
   });
-  await narrator.playPage(currentPage());
+  const played = await narrator.playPage(page);
   // Navigation/background recovery may have cancelled playback while awaiting it.
   if (state.phase !== "narrator" || !state.book || !currentPage()) return;
   state.phase = presentation.state;
+  state.narratorPlaybackFailed = !played;
   state.noorMessage = needsPracticeLetter
     ? "letter.needs_practice"
     : uncalibratedLetter ? "letter.practice_retry" : presentation.postNarratorKey;
+  render();
+}
+
+async function playNarratorManually() {
+  const page = currentPage();
+  if (!page || !state.feedback) return;
+  state.phase = "narrator";
+  render();
+  const played = await narrator.playPage(page);
+  if (state.phase !== "narrator") return;
+  state.phase = state.feedback.offerContinue ? "continue" : "retry";
+  state.narratorPlaybackFailed = !played;
   render();
 }
 
@@ -787,10 +825,10 @@ function preloadNextPage() {
     const image = new Image();
     image.src = next.imageUrl;
   }
-  if (next.narratorAudioUrl) {
+  if (next.narratorAudio) {
     const audio = new Audio();
     audio.preload = "auto";
-    audio.src = next.narratorAudioUrl;
+    audio.src = next.narratorAudio;
   }
 }
 
@@ -1091,6 +1129,7 @@ function renderSession() {
           <div class="noor-bubble" role="status" aria-live="polite" aria-atomic="true"></div>
         </div>
         <div id="phase-controls-container"></div>
+        ${READING_DEBUG ? '<pre data-reading-debug class="reading-debug-panel"></pre>' : ""}
       </main>
     `;
   }
@@ -1099,6 +1138,8 @@ function renderSession() {
   app.querySelector("#session-topbar").innerHTML = topbar(state.book.title, "details");
   app.querySelector(".session-page-meta").textContent = `الصفحة ${toArabicNumber(pageNumber)} من ${toArabicNumber(totalPages)}`;
   app.querySelector(".progress-fill").style.setProperty("--progress", `${progress}%`);
+  const debugPanel = app.querySelector("[data-reading-debug]");
+  if (debugPanel) debugPanel.textContent = readingDebugEvents.map((item) => JSON.stringify(item)).join("\n");
   const pageScene = app.querySelector(".page-scene");
   pageScene.innerHTML = page.imageUrl
     ? `<img class="book-page-image" src="${page.imageUrl}" alt="صفحة ${toArabicNumber(page.pageNumber)} من ${escapeHtml(state.book.title)}">`
@@ -1189,7 +1230,7 @@ function renderReadingText(text) {
     if (!part.trim()) return part;
     const currentIndex = wordIndex++;
     const confirmed = confirmedAlignment[currentIndex] || { state: "unread" };
-    const wordAlignment = markAllRead || confirmed.state === "correct"
+    const wordAlignment = markAllRead || state.matchedWordIndexes.includes(currentIndex) || confirmed.state === "correct"
       ? { state: "correct" }
       : liveAlignment[currentIndex] || { state: "unread" };
     const stateClass = ` reading-word--${wordAlignment.state}`;
@@ -1312,6 +1353,7 @@ function renderPhaseControls() {
     return `
       <div class="controls">
         ${renderRetryHint()}
+        ${state.narratorPlaybackFailed ? '<button class="secondary-button" data-action="play-narrator-manually">اسمع القراءة الصحيحة</button>' : ""}
         <button class="primary-button" data-action="retry-page">${t("cta.retry")}</button>
         ${pageNavigation()}
       </div>
@@ -1502,6 +1544,7 @@ element.addEventListener("click", () => {
       if (action === "delete-recording") deleteRecording();
       if (action === "submit-recording") submitRecording();
       if (action === "retry-page") retryPage();
+      if (action === "play-narrator-manually") playNarratorManually();
       if (action === "next-page") nextPage("success");
       if (action === "previous-page") movePage(-1);
       if (action === "next-page-manual") movePage(1);

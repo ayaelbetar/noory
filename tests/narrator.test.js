@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { books } from "../src/data/books.js";
 import { NarratorService } from "../src/features/playback/narrator.js";
 
 describe("NarratorService", () => {
+  it("routes Try Again through the current page rather than deriving an audio filename", () => {
+    const appSource = readFileSync(new URL("../src/app-v2.js", import.meta.url), "utf8");
+    assert.match(appSource, /const page = currentPage\(\);[\s\S]*await narrator\.playPage\(page\)/);
+  });
+
   it("reports missing professional narrator audio instead of using browser TTS", async () => {
     let error = "";
     const narrator = new NarratorService({ onError: (value) => { error = value.message; } });
@@ -56,7 +62,7 @@ describe("NarratorService", () => {
     assert.equal(speechCalls, 0);
   });
 
-  it("plays the Girl-book narrator sequence that resumes at recording 16 on page 11", async () => {
+  it("plays the exact current-page narratorAudio mapping after a retry", async () => {
     const playedSources = [];
     global.Audio = class MockAudio {
       constructor(src) {
@@ -84,8 +90,8 @@ describe("NarratorService", () => {
     await narrator.playPage(girl.pages[28]);
 
     assert.deepEqual(playedSources, [
-      "./assets/books/girl/narration/16.mp3",
-      "./assets/books/girl/narration/35.mp3"
+      girl.pages[10].narratorAudio,
+      girl.pages[28].narratorAudio
     ]);
   });
 });

@@ -1,8 +1,8 @@
-import { evaluateReading } from "./evaluator.js";
 import { evaluateArabicLetterSound } from "./isolated-letter-evaluator.js";
+import { evaluateReading } from "./evaluator.js";
 
 /** Story/word reading and isolated-letter sound evaluation remain separate. */
-export async function evaluateChildReading({ page, attempt, retryCount = 0, acousticAssessor = evaluateArabicLetterSound }) {
+export async function evaluateChildReading({ page, attempt, retryCount = 0, acousticAssessor = evaluateArabicLetterSound } = {}) {
   if (!page?.expectedText) throw new Error("MISSING_EXPECTED_PAGE_TEXT");
   if (page.activityType === "letter-sound" && page.letterActivity) {
     const acoustic = await acousticAssessor({

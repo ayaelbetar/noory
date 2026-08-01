@@ -28,6 +28,11 @@ const storyPage = (bookId, number, text, audioFile, sourcePdfPage = number, acti
   // reading-content score until its acoustic assessment is validated.
   scoreInFinal: activity.scoreInFinal !== false,
   // Professional page narration, used only for listening/pronunciation help.
+  // This is an explicit manifest value for the current displayed page. UI
+  // code must pass it through to the narrator service; it must never derive a
+  // filename from a page number.
+  narratorAudio: audioFile ? `./assets/books/${bookId}/narration/${audioFile}` : "",
+  // Retained for callers that have not yet switched to narratorAudio.
   narratorAudioUrl: audioFile ? `./assets/books/${bookId}/narration/${audioFile}` : "",
   imageUrl: `./assets/books/${bookId}/pages/page-${String(activity.imageSourcePdfPage || sourcePdfPage).padStart(2, "0")}.webp`,
 });
@@ -88,23 +93,20 @@ const mosque = [
   { imageSourcePdfPage: mosqueCleanIllustrationPages[sourcePdfPage] }
 ));
 
-// The supplied PDF has 31 source pages. Its cover is source page 1, so the
-// child-facing experience contains every reading page from 2 through 31.
-// The narrator pack begins with the cover recording. Pages 1–10 use the
-// verified following recordings (2–11). Recordings 12–15 are excluded from
-// this story, so page 11 resumes at recording 16 and continues sequentially.
-const girlNarratorFile = (displayPageNumber) =>
-  displayPageNumber === 28 ? "34.mp3"
-    : displayPageNumber === 29 ? "35.mp3"
-      : `${displayPageNumber <= 10 ? displayPageNumber + 1 : displayPageNumber + 5}.mp3`;
+// Explicit, verified page-to-recording manifest. 12–15 and 33 are
+// intentionally absent; do not replace this list with a numeric offset.
+const girlNarratorFiles = Object.freeze([
+  "2.mp3", "3.mp3", "4.mp3", "5.mp3", "6.mp3", "7.mp3", "8.mp3", "9.mp3", "10.mp3", "11.mp3",
+  "16.mp3", "17.mp3", "18.mp3", "19.mp3", "20.mp3", "21.mp3", "22.mp3", "23.mp3", "24.mp3", "25.mp3",
+  "26.mp3", "27.mp3", "28.mp3", "29.mp3", "30.mp3", "31.mp3", "32.mp3", "34.mp3", "35.mp3"
+]);
 
 const girl = [
   "جَاءَ المَسَاء", "وَبَكَتِ الطَّفْلَةُ وَاء وَاء!", "لَعِبَ بَابَا مَعَهَا الغُمَّيْضَةَ", "وَدَعْدَعَتْهَا مَامَا لِسَاعَةٍ وَزِيَادَة", "فَضَحِكَتِ الطَّفْلَةُ لَحْظَةً", "لَكِنَّهَا عَادَتْ سَرِيعًا لِلبُكَاءِ", "وَقَفَ بَابَا عَلَى رَأْسِهِ", "وَأَخْرَجَتْ مَامَا لِسَانَهَا", "فَسَكَنَتِ الطَّفْلَةُ لَحْظَةً", "ثُمَّ عَادَتْ ثَانِيَةً لِلبُكَاءِ", "رَقَصَتِ مَامَا رَقْصَةَ الدَّجَاجَةِ", "وَجَلَسَ بَابَا فَوْقَ الثَّلَّاجَةِ", "لَكِنَّ الطَّفْلَةَ بَكَتْ وَبَكَتْ", "حَتَّى أَغْرَقَتْ دُمُوعُهَا البَيْتَ", "وَلَمَّا رَأَتْ مَامَا تَطْفُو", "وَبَابَا يَغْطِسُ", "كَرْكَرَتِ الطِّفْلَةُ لَحْظَةً", "لَكِنَّهَا عَادَتْ بِسُرْعَةٍ لِلبُكَاءِ", "ثُمَّ جَاءَ الجَدُّ", "وَمَعَهُ الجَدَّةُ", "وَجَاءَ الجِيرَانُ", "وَشُرْطَةُ النَّجْدَةِ", "وَحَاوَلُوا جَمِيعًا إِضْحَاكَهَا", "لَكِنَّ الطَّفْلَةَ اسْتَمَرَّتْ فِي البُكَاءِ", "وَفَجْأَةً سَمِعَ الكُلُّ صَوْتًا غَرِيبًا!", "بْرُوووووف!", "وَظَهَرَ أَنَّهُ - وَيَالَعَجَبِ! كَانَ المَغَصُ هُوَ السَّبَبْ!", "وَقَبْلَ طُلُوعِ شَمْسِ اليَوْمِ", "وَتَوَقَّفَ الطِّفْلُ عَنِ البُكَاءِ.", "رَاحَ الكُلُّ أَخِيرًا فِي النَّوْمِ"
-// The supplied source page 30 is not part of the child-facing story.
 ].filter((_text, sourceIndex) => sourceIndex !== 28).map((text, index) => {
   const pageNumber = index + 1;
   const sourcePdfPage = pageNumber === 29 ? 31 : pageNumber + 1;
-  return storyPage("girl", pageNumber, text, girlNarratorFile(pageNumber), sourcePdfPage);
+  return storyPage("girl", pageNumber, text, girlNarratorFiles[index], sourcePdfPage);
 });
 
 export const books = [

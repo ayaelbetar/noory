@@ -4,10 +4,11 @@
  * cleanup. It never evaluates audio or changes the reading Retry count.
  */
 export class RecordingController {
-  constructor({ onLevel = () => {}, onTranscript = () => {}, onStatus = () => {} } = {}) {
+  constructor({ onLevel = () => {}, onTranscript = () => {}, onStatus = () => {}, onDiagnostic = () => {} } = {}) {
     this.onLevel = onLevel;
     this.onTranscript = onTranscript;
     this.onStatus = onStatus;
+    this.onDiagnostic = onDiagnostic;
     this.mediaRecorder = null;
     this.stream = null;
     this.chunks = [];
@@ -47,18 +48,29 @@ export class RecordingController {
     this.confirmedTranscript = "";
     this.maxLevel = 0;
     this.startedAt = performance.now();
-    this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-    });
+    this.onDiagnostic("microphone-requested");
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+    } catch (error) {
+      this.onDiagnostic("microphone-error", { name: error?.name, message: error?.message });
+      throw error;
+    }
+    const track = this.stream.getAudioTracks()[0];
+    this.onDiagnostic("microphone-ready", { trackCount: this.stream.getAudioTracks().length, readyState: track?.readyState || "missing" });
 
     this.mediaRecorder = new MediaRecorder(this.stream);
+    this.onDiagnostic("media-recorder-created", { mimeType: this.mediaRecorder.mimeType || "browser-default" });
     this.mediaRecorder.addEventListener("dataavailable", (event) => {
       if (event.data?.size) this.chunks.push(event.data);
+      this.onDiagnostic("media-recorder-data", { mimeType: event.data?.type || "", byteSize: event.data?.size || 0 });
     });
 
     this.startMeter();
     this.startSpeechRecognition();
     this.mediaRecorder.start(250);
+    this.onDiagnostic("media-recorder-started", { mimeType: this.mediaRecorder.mimeType || "browser-default" });
     this.onStatus("recording");
   }
 
@@ -83,6 +95,7 @@ export class RecordingController {
           maxLevel: this.maxLevel,
           transcript: this.transcript.trim()
         };
+        this.onDiagnostic("media-recorder-stopped", { mimeType: blob.type, byteSize: blob.size, durationMs: Math.round(result.durationMs) });
         this.cleanup();
         resolve(result);
       }, { once: true });
@@ -97,14 +110,19 @@ export class RecordingController {
   startSpeechRecognition() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
+      this.onDiagnostic("speech-unavailable");
       this.onStatus("speech-unavailable");
       return;
     }
 
     this.recognition = new SpeechRecognition();
+    this.onDiagnostic("speech-recognition-created", { language: "ar-SA" });
     this.recognition.lang = "ar-SA";
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
+    for (const eventName of ["start", "audiostart", "soundstart", "speechstart", "speechend", "soundend", "audioend", "end"]) {
+      this.recognition.addEventListener(eventName, () => this.onDiagnostic(`speech-${eventName}`));
+    }
     this.recognition.addEventListener("result", (event) => {
       let text = "";
       let isFinal = true;
@@ -131,10 +149,14 @@ export class RecordingController {
         confirmedText: this.confirmedTranscript,
         confirmedConfidence
       });
+      this.onDiagnostic("speech-result", { isFinal, resultCount: event.results.length });
     });
-    this.recognition.addEventListener("error", () => this.onStatus("speech-error"));
+    this.recognition.addEventListener("error", (event) => {
+      this.onDiagnostic("speech-error", { error: event.error || "unknown", message: event.message || "" });
+      this.onStatus("speech-error");
+    });
 
-    try { this.recognition.start(); } catch { this.onStatus("speech-error"); }
+    try { this.recognition.start(); this.onDiagnostic("speech-recognition-started"); } catch (error) { this.onDiagnostic("speech-start-error", { name: error?.name, message: error?.message }); this.onStatus("speech-error"); }
   }
 
   /** Stops optional speech recognition without affecting the recorded media stream. */

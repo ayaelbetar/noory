@@ -51,7 +51,7 @@ export function canSubmit({ submissionInFlight, evaluations }) {
  * @returns {string} A key from the approved message library.
  */
 export function failureMessageKey(code) {
-  if (["NETWORK_ERROR", "AI_TIMEOUT", "STT_FAILED", "EVALUATION_FAILED", "UPSTREAM_ERROR", "SERVICE_UNAVAILABLE"].includes(code)) {
+  if (["NETWORK_ERROR", "AI_TIMEOUT", "STT_FAILED", "EVALUATION_FAILED", "UPSTREAM_ERROR", "SERVICE_UNAVAILABLE", "EVALUATOR_UNAVAILABLE"].includes(code)) {
     return code === "NETWORK_ERROR" ? "network.01" : "network.02";
   }
   // Recognition/audio uncertainty is not evidence that the child read wrongly.

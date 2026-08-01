@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { describe, it } from "node:test";
 import { books } from "../src/data/books.js";
 import { evaluateChildReading } from "../src/features/reading/reading-evaluation-service.js";
@@ -78,7 +78,7 @@ describe("Baa book page configuration", () => {
 });
 
 describe("Girl book page and narrator mapping", () => {
-  it("keeps source page 1 excluded, omits source page 30, and exposes 29 active reading pages", () => {
+  it("keeps source page 1 excluded, omits source page 30, and exposes 29 reading pages", () => {
     assert.equal(girl.pages.length, 29);
     assert.equal(girl.pages[0].pageNumber, 1);
     assert.equal(girl.pages[0].sourcePdfPage, 2);
@@ -86,17 +86,22 @@ describe("Girl book page and narrator mapping", () => {
     assert.equal(girl.pages.at(-1).sourcePdfPage, 31);
   });
 
-  it("keeps the verified first ten recordings and resumes at recording 16 on page 11", () => {
+  it("uses the explicit verified narrator mapping and skips intentionally unused files", () => {
     assert.equal(girl.pages[0].narratorAudioUrl, "./assets/books/girl/narration/2.mp3");
     assert.equal(girl.pages[9].narratorAudioUrl, "./assets/books/girl/narration/11.mp3");
-    assert.equal(girl.pages[10].narratorAudioUrl, "./assets/books/girl/narration/16.mp3");
-    assert.equal(girl.pages[11].narratorAudioUrl, "./assets/books/girl/narration/17.mp3");
-    assert.equal(girl.pages[12].narratorAudioUrl, "./assets/books/girl/narration/18.mp3");
-    assert.equal(girl.pages[27].narratorAudioUrl, "./assets/books/girl/narration/34.mp3");
-    assert.equal(girl.pages[28].narratorAudioUrl, "./assets/books/girl/narration/35.mp3");
+    assert.equal(girl.pages[10].narratorAudio, "./assets/books/girl/narration/16.mp3");
+    assert.equal(girl.pages[26].narratorAudio, "./assets/books/girl/narration/32.mp3");
+    assert.equal(girl.pages[27].narratorAudio, "./assets/books/girl/narration/34.mp3");
+    assert.equal(girl.pages[28].narratorAudio, "./assets/books/girl/narration/35.mp3");
+    const referenced = new Set(girl.pages.map((page) => page.narratorAudio));
+    for (const unused of ["12.mp3", "13.mp3", "14.mp3", "15.mp3", "33.mp3"]) {
+      assert.equal(referenced.has(`./assets/books/girl/narration/${unused}`), false, `${unused} is unreferenced`);
+    }
+    const manifestSource = readFileSync(new URL("../src/data/books.js", import.meta.url), "utf8");
+    assert.doesNotMatch(manifestSource, /girlNarratorFile\s*=|displayPageNumber\s*[+\-]/);
   });
 
-  it("keeps every active image, expected text, and narrator asset after omitting source page 30", () => {
+  it("keeps every active image, expected text, and narrator asset", () => {
     for (const page of girl.pages) {
       assert.ok(page.expectedText, `${page.id} has exact expected text`);
       assert.equal(existsSync(toLocalPath(page.imageUrl)), true, `${page.id} image exists`);

@@ -22,6 +22,15 @@ env/
 # Local recordings, databases, and temporary output
 tmp-recordings/
 local-evaluation/
+*.joblib
+*.pkl
+*.pickle
+*.parquet
+*.jsonl
+*.mp3
+*.m4a
+*.flac
+!assets/books/*/narration/*.mp3
 recordings/
 private-recordings/
 data/letter-calibration/
